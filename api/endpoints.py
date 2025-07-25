@@ -13,9 +13,6 @@ templates = Jinja2Templates(directory="templates")
 IMAGES_DIR = "images"
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
-class ImageUpload(BaseModel):
-    base64: str
-
 @router.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
     """Upload an image file and save it locally in images folder"""

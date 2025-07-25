@@ -114,19 +114,19 @@
         <div class="content">
             {% if image_exists %}
             <div class="image-container">
-                <img src="/api/image" alt="Latest captured image" id="capturedImage">
+                <img src="/image" alt="Latest captured image" id="capturedImage">
             </div>
-            <button class="refresh-btn" onclick="refreshImage()">🔄 Refresh Image</button>
             {% else %}
             <div class="no-image">
                 📷 No image captured yet<br>
                 <small>Upload an image to see it here</small>
             </div>
             {% endif %}
+            <button class="refresh-btn" onclick="refreshImage()">🔄 Refresh Image</button>
             
             <div class="upload-info">
                 <h3>📤 How to Upload</h3>
-                <p>Send a POST request to <code>/api/upload</code> with your image file to capture and display it here.</p>
+                <p>Send a POST request to <code>/upload</code> with your image file to capture and display it here.</p>
             </div>
         </div>
     </div>
@@ -136,15 +136,12 @@
             // Add timestamp to force refresh
             const img = document.getElementById('capturedImage');
             if (img) {
-                img.src = '/image?' + new Date().getTime();
+                img.src = 'image?' + new Date().getTime();
             } else {
                 // If no image currently shown, reload the page
                 window.location.reload();
             }
         }
-        
-        // Auto-refresh every 5 seconds
-        setInterval(refreshImage, 5000);
     </script>
 </body>
 </html>
