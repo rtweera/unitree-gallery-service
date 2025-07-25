@@ -136,7 +136,7 @@
             // Add timestamp to force refresh
             const img = document.getElementById('capturedImage');
             if (img) {
-                img.src = '/api/image?' + new Date().getTime();
+                img.src = '/image?' + new Date().getTime();
             } else {
                 // If no image currently shown, reload the page
                 window.location.reload();

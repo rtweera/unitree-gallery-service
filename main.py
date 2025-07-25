@@ -6,7 +6,6 @@ from api.endpoints import router
 
 app = FastAPI(title="Unitree Gallery Service", description="A simple image gallery service")
 
-
 # Include API routes
 app.include_router(router, prefix="")
 
