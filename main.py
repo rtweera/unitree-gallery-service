@@ -6,6 +6,11 @@ from api.endpoints import router
 
 app = FastAPI(title="Unitree Gallery Service", description="A simple image gallery service")
 
+@router.get("/")
+async def root():
+    """Root endpoint to check if the service is running"""
+    return {"message": "Unitree Gallery Service is running"}
+
 # Include API routes
 app.include_router(router, prefix="/api")
 
