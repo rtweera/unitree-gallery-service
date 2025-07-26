@@ -11,4 +11,5 @@ dependencies = [
     "redis>=5.0.0",
     "python-dotenv>=1.0.0",
     "python-multipart>=0.0.20",
+    "qrcode>=7.4.2",
 ]
