@@ -2,9 +2,11 @@ import os
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from dotenv import load_dotenv
 from .services import get_images, save_image, get_image_path, generate_qr_code, get_basename_images
+from .constants import IMG_EXT
 
-# from .service import ImageService
+load_dotenv(verbose=True, override=True)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -44,17 +46,17 @@ async def upload_image(file: UploadFile = File(...)):
         content = await file.read()
         
         # Save the image to the images directory
-        image_path = save_image(content)
-        if not image_path:
-            raise HTTPException(status_code=500, detail="Failed to save image")        
+        image_id = save_image(content)
+        if not image_id:
+            raise HTTPException(status_code=500, detail="Failed to save image")
         return {
             "status": "Image captured and uploaded successfully",
-            "path": image_path
+            "id": image_id
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
 
-@router.get("/image", response_class=FileResponse)
+@router.get("/images/latest", response_class=FileResponse)
 async def serve_latest_image():
     """Serve the saved image"""
     image_files = get_images()
@@ -62,16 +64,15 @@ async def serve_latest_image():
         raise HTTPException(status_code=404, detail="No image found")
     return FileResponse(image_files[0], media_type="image/jpeg")
 
-
 @router.get("/images/{image_id}", response_class=FileResponse)
 async def serve_image(image_id: str):
     """Serve the saved image"""
-    return FileResponse(get_image_path(image_id), media_type="image/jpeg")
+    return FileResponse(get_image_path(image_id + IMG_EXT), media_type="image/jpeg")
 
 @router.get("/download/{image_id}")
 async def download_image(image_id: str):
     """Download the image file directly"""
-    image_path = get_image_path(image_id)
+    image_path = get_image_path(image_id + IMG_EXT)
 
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="Image not found")
@@ -86,7 +87,7 @@ async def download_image(image_id: str):
 @router.delete("/delete/{image_id}")
 async def delete_image(image_id: str):
     """Delete the image file"""
-    image_path = get_image_path(image_id)
+    image_path = get_image_path(image_id + IMG_EXT)
 
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="Image not found")
@@ -94,9 +95,11 @@ async def delete_image(image_id: str):
     os.remove(image_path)
     return {"status": "success", "message": "Image deleted successfully"}
 
-@router.delete("/delete")
+@router.delete("/delete/all")
 async def delete_all_images():
     """Delete all images"""
+    if not os.getenv("ENABLE_DELETE_ALL", "False").lower() == "true":
+        raise HTTPException(status_code=503, detail="This endpoint has been disabled")
     image_files = get_images()
     for image_path in image_files:
         os.remove(image_path)
@@ -105,7 +108,7 @@ async def delete_all_images():
 @router.get("/qr/{image_id}")
 async def get_qr_code(image_id: str):
     """Get the QR code for a specific image"""
-    image_path = get_image_path(image_id + ".jpg")
+    image_path = get_image_path(image_id + IMG_EXT)
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail=f"Image with ID {image_id} not found")
 
@@ -121,8 +124,8 @@ async def get_qr_code(image_id: str):
 # =================
 @router.get("/")
 async def redirect_to_latest():
-    """Redirect to the latest image page"""
-    return RedirectResponse(url="/latest", status_code=302)
+    """Redirect to the gallery images page"""
+    return RedirectResponse(url="/gallery", status_code=302)
 
 
 @router.get("/latest", response_class=HTMLResponse)
@@ -135,18 +138,6 @@ async def single_photo_page(request: Request):
     return templates.TemplateResponse("latest_image.html", {
         "request": request, 
         "image_exists": image_exists
-    })
-
-
-@router.get("/old-gallery", response_class=HTMLResponse)
-async def old_gallery_page(request: Request):
-    """Show all images in a gallery"""
-    image_files = get_images()
-    
-    return templates.TemplateResponse("old_gallery.html", {
-        "request": request,
-        "image_urls": image_files,
-        "images_exist": bool(image_files)
     })
 
 @router.get("/gallery", response_class=HTMLResponse)

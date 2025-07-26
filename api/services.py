@@ -2,14 +2,9 @@ import os
 from uuid import uuid4
 import qrcode
 from dotenv import load_dotenv
+from .constants import IMG_EXT, QR_EXT, IMAGES_DIR, QR_DIR
 
 load_dotenv(verbose=True, override=True)
-
-# Ensure directories exist
-IMAGES_DIR = "images"
-QR_DIR = "qr"
-os.makedirs(IMAGES_DIR, exist_ok=True)
-os.makedirs(QR_DIR, exist_ok=True)
 
 def get_images(images_dir: str = IMAGES_DIR):
     """Get a path list of all uploaded images"""
@@ -23,8 +18,8 @@ def get_images(images_dir: str = IMAGES_DIR):
 def get_basename_images(images_dir: str = IMAGES_DIR):
     """Get a list of image filenames without paths"""
     image_files = sorted(
-        [f for f in os.listdir(images_dir) if f.endswith(".jpg")],
-        key=lambda x: os.path.getmtime(os.path.join(images_dir, x)),
+        [os.path.splitext(f)[0] for f in os.listdir(images_dir) if f.endswith(IMG_EXT)],
+        key=lambda x: os.path.getmtime(os.path.join(images_dir, x + IMG_EXT)),
         reverse=True
     )
     return image_files
@@ -41,24 +36,23 @@ def save_image(image_data: bytes, images_dir: str = IMAGES_DIR) -> str:
     with open(image_path, "wb") as f:
         f.write(image_data)
     
-    return image_path
+    return str(image_id)
 
 def get_image_path(image_id: str, images_dir: str = IMAGES_DIR) -> str:
     """Get the full path of an image by its ID"""
     return os.path.join(images_dir, image_id)
 
 
-def generate_qr_code(image_id: str, image_extension: str = ".jpg", deployed_url: str = os.getenv("DEPLOYED_URL", ""), download_endpoint: str = "/download", qr_dir: str = QR_DIR) -> str:
+def generate_qr_code(image_id: str, deployed_url: str = os.getenv("DEPLOYED_URL", ""), download_endpoint: str = "/download", qr_dir: str = QR_DIR, qr_ext: str = QR_EXT) -> str:
     """Generate a QR code pointing to the download URL"""
     if not deployed_url:
         raise ValueError("DEPLOYED_URL environment variable is not set")
-    qr_path = os.path.join(qr_dir, f"{image_id}.png")
+    qr_path = os.path.join(qr_dir, f"{image_id}{qr_ext}")
 
     # Avoid regenerating if already exists
     # if not os.path.exists(qr_path):
-    download_url = f"{deployed_url}{download_endpoint}/{image_id}{image_extension}"
+    download_url = f"{deployed_url}{download_endpoint}/{image_id}"
     qr_img = qrcode.make(download_url)
     with open(qr_path, "wb") as qr_file:
         qr_img.save(qr_file)
-
-    return os.path.join(qr_dir, f"{image_id}.png")
+    return qr_path

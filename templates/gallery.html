@@ -103,9 +103,20 @@
             margin-top: 10px;
             transition: background 0.3s;
         }
+        .delete-btn {
+            background: #d28d94;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
 
-        .refresh-btn:hover {
-            background: #1e7e34;
+        .delete-btn:hover {
+            background: #e7707c;
         }
     </style>
 </head>
@@ -143,6 +154,7 @@
             <p>Scan to download</p>
             {% endif %}
             <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+            <button class="delete-btn" onclick="deleteCurrentImage()">❌ Delete</button>
         </div>
     </div>
 
@@ -156,7 +168,7 @@
             const qrImg = document.getElementById('qrImage');
 
             mainImg.src = '/images/' + imageUrl;
-            qrImg.src = '/qr/' + basename(imageUrl);
+            qrImg.src = '/qr/' + imageUrl;
 
             // Update selected thumbnail style
             document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('selected'));
@@ -166,6 +178,28 @@
                     el.parentElement.classList.add('selected');
                 }
             });
+        }
+
+        function deleteCurrentImage() {
+            const mainImg = document.getElementById('mainImage');
+            const qrImg = document.getElementById('qrImage');
+
+            if(!mainImg || !mainImg.src) {
+                alert("No image to delete.");
+                return;
+            }
+
+            const imageUrl = mainImg.src.split('/').pop();
+            const qrUrl = qrImg.src.split('/').pop();
+
+            // Optionally, you can also remove the selected thumbnail
+            const selectedThumbnail = document.querySelector('.thumbnail.selected');
+            if (selectedThumbnail) {
+                selectedThumbnail.remove();
+            }
+
+            // Optionally, reload the page or update the gallery
+            location.reload();
         }
     </script>
 
