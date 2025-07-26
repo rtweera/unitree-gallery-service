@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSO2Con Gallery Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            min-height: 80vh;
+        }
+
+        .sidebar {
+            width: 20%;
+            background: #f0f0f0;
+            overflow-y: auto;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+        }
+
+        .thumbnail {
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: border 0.2s;
+        }
+
+        .thumbnail:hover,
+        .thumbnail.selected {
+            border-color: #764ba2;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .main-display {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-display img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .qr-code {
+            width: 30%;
+            background: #f8f9fa;
+            padding: 20px;
+            border-left: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-code img {
+            width: 250px;
+            height: 250px;
+            margin-bottom: 10px;
+        }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Thumbnail Strip -->
+        <div class="sidebar">
+            {% if images_exist %}
+                {% for image_url in image_urls %}
+                <div class="thumbnail {% if loop.first %}selected{% endif %}" onclick="selectImage('{{ image_url }}')">
+                    <img src="/images/{{ image_url }}" alt="Thumbnail {{ loop.index }}">
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No images found.</p>
+            {% endif %}
+        </div>
+
+        <!-- Main Image Display -->
+        <div class="main-display">
+            {% if images_exist %}
+            <img id="mainImage" src="/images/{{ image_urls[0] }}" alt="Selected image">
+            <script>
+                console.log("Selected image URL:", "{{ image_urls }}");
+            </script>
+            {% else %}
+            <p>No image to display</p>
+            {% endif %}
+        </div>
+
+        <!-- QR Code Display -->
+        <div class="qr-code">
+            {% if images_exist %}
+            <img id="qrImage" src="/qr/{{ image_urls[0]|basename }}" alt="QR Code">
+            <p>Scan to download</p>
+            {% endif %}
+            <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        function basename(path) {
+            return path.split('.').slice(0, -1).join('.');
+        }
+
+        function selectImage(imageUrl) {
+            const mainImg = document.getElementById('mainImage');
+            const qrImg = document.getElementById('qrImage');
+
+            mainImg.src = '/images/' + imageUrl;
+            qrImg.src = '/qr/' + basename(imageUrl);
+
+            // Update selected thumbnail style
+            document.querySelectorAll('.thumbnail').forEach(el => el.classList.remove('selected'));
+            const thumbnails = document.querySelectorAll('.thumbnail img');
+            thumbnails.forEach(el => {
+                if (el.src === ('/images/' + imageUrl)) {
+                    el.parentElement.classList.add('selected');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
