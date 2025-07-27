@@ -267,14 +267,14 @@
             <!-- QR Code & Download Section -->
             <div class="bg-card border border-border rounded-lg shadow-sm transition-all duration-300 overflow-hidden flex flex-col min-h-0">
                 <div class="px-4 pt-4 pb-2 text-center flex-shrink-0">
-                    <h3 class="font-semibold text-base mb-1">Take Oxy's Memories Home</h3>
-                    <p class="text-sm text-muted-foreground">Snap this code with your phone</p>
+                    <h3 class="font-semibold text-base mb-1 text-2xl">Download and Take Oxy's Memories Home</h3>
+                
                 </div>
                 
                 {% if images_exist %}
                 <div class="flex-1 flex flex-col justify-center items-center p-4 min-h-0">
                     <img id="qrImage" src="/qr/{{ image_urls[0]|basename }}" alt="QR Code to keep Oxy's adventures" class="w-full aspect-square bg-muted rounded-xl block p-4 object-contain shadow-lg">
-                    <p class="text-sm text-muted-foreground mt-3 text-center">Bring Oxy's discoveries to your pocket</p>
+                  
                 </div>
                 {% endif %}
                 
