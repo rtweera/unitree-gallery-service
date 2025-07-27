@@ -57,3 +57,4 @@ typing-extensions==4.13.2
     #   uvicorn
 uvicorn==0.33.0
     # via unitree-gallery-service (pyproject.toml)
+pillow==10.4.0
