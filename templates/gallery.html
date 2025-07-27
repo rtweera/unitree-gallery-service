@@ -487,6 +487,17 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .delete-btn {
+            background: #d28d94;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
 
         /* Custom scrollbar styling */
         .thumbnail-grid::-webkit-scrollbar {
@@ -626,7 +637,6 @@
                 </button>
             </div>
         </div>
-
         <!-- Gallery Grid -->
         <div class="gallery-grid">
             <!-- Thumbnail Section -->
@@ -726,14 +736,15 @@
         function selectImage(imageUrl) {
             const mainImg = document.getElementById('mainImage');
             const qrImg = document.getElementById('qrImage');
-
+          
             if (mainImg) {
                 mainImg.src = '/images/' + imageUrl;
             }
             
             if (qrImg) {
-                qrImg.src = '/qr/' + basename(imageUrl);
+                qrImg.src = '/qr/' + imageUrl;
             }
+
 
             // Update selected thumbnail style
             document.querySelectorAll('.thumbnail').forEach(el => {
