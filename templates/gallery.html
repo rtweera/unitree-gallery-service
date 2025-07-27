@@ -728,183 +728,253 @@
         </div>
     </main>
 
-    <script>
-        function basename(path) {
-            return path.split('.').slice(0, -1).join('.');
+
+<script>
+    let currentSelectedImage = null; // Track the currently selected image
+
+    function basename(path) {
+        return path.split('.').slice(0, -1).join('.');
+    }
+
+    function selectImage(imageUrl) {
+        const mainImg = document.getElementById('mainImage');
+        const qrImg = document.getElementById('qrImage');
+      
+        if (mainImg) {
+            mainImg.src = '/images/' + imageUrl;
+        }
+        
+        if (qrImg) {
+            qrImg.src = '/qr/' + imageUrl;
         }
 
-        function selectImage(imageUrl) {
-            const mainImg = document.getElementById('mainImage');
-            const qrImg = document.getElementById('qrImage');
-          
-            if (mainImg) {
-                mainImg.src = '/images/' + imageUrl;
-            }
-            
-            if (qrImg) {
-                qrImg.src = '/qr/' + imageUrl;
-            }
+        // Store the currently selected image
+        currentSelectedImage = imageUrl;
 
+        // Update selected thumbnail style
+        document.querySelectorAll('.thumbnail').forEach(el => {
+            el.classList.remove('selected');
+            el.setAttribute('aria-pressed', 'false');
+        });
+        
+        // Find and select the clicked thumbnail
+        const thumbnails = document.querySelectorAll('.thumbnail img');
+        thumbnails.forEach(el => {
+            if (el.src.includes('/images/' + imageUrl)) {
+                el.parentElement.classList.add('selected');
+                el.parentElement.setAttribute('aria-pressed', 'true');
+            }
+        });
 
-            // Update selected thumbnail style
-            document.querySelectorAll('.thumbnail').forEach(el => {
-                el.classList.remove('selected');
-                el.setAttribute('aria-pressed', 'false');
-            });
-            
-            // Find and select the clicked thumbnail
-            const thumbnails = document.querySelectorAll('.thumbnail img');
-            thumbnails.forEach(el => {
-                if (el.src.includes('/images/' + imageUrl)) {
-                    el.parentElement.classList.add('selected');
-                    el.parentElement.setAttribute('aria-pressed', 'true');
-                }
-            });
+        // Update delete button state
+        updateDeleteButtonState();
+    }
+
+    function updateDeleteButtonState() {
+        const deleteBtn = document.getElementById('deleteBtn');
+        if (deleteBtn) {
+            deleteBtn.disabled = !currentSelectedImage;
+            if (!currentSelectedImage) {
+                deleteBtn.style.opacity = '0.5';
+                deleteBtn.title = 'Please select an image first';
+            } else {
+                deleteBtn.style.opacity = '1';
+                deleteBtn.title = 'Delete selected image';
+            }
         }
+    }
 
-        function handleThumbnailKeydown(event, imageUrl) {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                selectImage(imageUrl);
-            }
+    function handleThumbnailKeydown(event, imageUrl) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectImage(imageUrl);
         }
+    }
 
-        // Enhanced refresh functionality
-        function refreshGallery() {
-            const refreshBtn = document.getElementById('refreshBtn');
-            const refreshIcon = document.getElementById('refreshIcon');
-            const refreshText = document.getElementById('refreshText');
-            
-            if (refreshIcon && refreshText) {
-                refreshIcon.innerHTML = '<span class="loading"></span>';
-                refreshText.textContent = "Oxy's fetching new memories...";
-                refreshBtn.disabled = true;
-            }
-            
-            // Simulate loading delay for better UX
-            setTimeout(() => {
-                location.reload();
-            }, 500);
+    // Enhanced refresh functionality
+    function refreshGallery() {
+        const refreshBtn = document.getElementById('refreshBtn');
+        const refreshIcon = document.getElementById('refreshIcon');
+        const refreshText = document.getElementById('refreshText');
+        
+        if (refreshIcon && refreshText) {
+            refreshIcon.innerHTML = '<span class="loading"></span>';
+            refreshText.textContent = "Oxy's fetching new memories...";
+            refreshBtn.disabled = true;
         }
+        
+        // Simulate loading delay for better UX
+        setTimeout(() => {
+            location.reload();
+        }, 500);
+    }
 
-        // Toggle mobile menu
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu) {
             mobileMenu.classList.toggle('open');
         }
+    }
 
-        // Keyboard navigation
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-                const thumbnails = Array.from(document.querySelectorAll('.thumbnail'));
-                const selected = document.querySelector('.thumbnail.selected');
-                
-                if (!selected || thumbnails.length === 0) return;
-                
-                const currentIndex = thumbnails.indexOf(selected);
-                
-                let nextIndex;
-                if (event.key === 'ArrowLeft') {
-                    nextIndex = currentIndex > 0 ? currentIndex - 1 : thumbnails.length - 1;
-                } else {
-                    nextIndex = currentIndex < thumbnails.length - 1 ? currentIndex + 1 : 0;
-                }
-                
-                const nextThumbnail = thumbnails[nextIndex];
-                if (nextThumbnail) {
-                    const img = nextThumbnail.querySelector('img');
-                    if (img) {
-                        const imageUrl = img.src.split('/images/')[1];
-                        selectImage(imageUrl);
-                        nextThumbnail.focus();
-                    }
-                }
-            } else if (event.key === 'Escape') {
-                // Close mobile menu if open
-                document.getElementById('mobileMenu').classList.remove('open');
-            }
-        });
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const mobileMenu = document.getElementById('mobileMenu');
-            const menuToggle = document.querySelector('.menu-toggle');
+    // Keyboard navigation
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            const thumbnails = Array.from(document.querySelectorAll('.thumbnail'));
+            const selected = document.querySelector('.thumbnail.selected');
             
-            if (!mobileMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+            if (!selected || thumbnails.length === 0) return;
+            
+            const currentIndex = thumbnails.indexOf(selected);
+            
+            let nextIndex;
+            if (event.key === 'ArrowLeft') {
+                nextIndex = currentIndex > 0 ? currentIndex - 1 : thumbnails.length - 1;
+            } else {
+                nextIndex = currentIndex < thumbnails.length - 1 ? currentIndex + 1 : 0;
+            }
+            
+            const nextThumbnail = thumbnails[nextIndex];
+            if (nextThumbnail) {
+                const img = nextThumbnail.querySelector('img');
+                if (img) {
+                    const imageUrl = img.src.split('/images/')[1];
+                    selectImage(imageUrl);
+                    nextThumbnail.focus();
+                }
+            }
+        } else if (event.key === 'Escape') {
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
                 mobileMenu.classList.remove('open');
             }
-        });
+        } else if (event.key === 'Delete' && currentSelectedImage) {
+            // Allow deletion with Delete key
+            deleteCurrentImage();
+        }
+    });
 
-        // Initialize accessibility attributes
-        document.addEventListener('DOMContentLoaded', function() {
-            const selected = document.querySelector('.thumbnail.selected');
-            if (selected) {
-                selected.setAttribute('aria-pressed', 'true');
-            }
-            
-            document.querySelectorAll('.thumbnail:not(.selected)').forEach(el => {
-                el.setAttribute('aria-pressed', 'false');
-            });
-        });
-
-        console.log("Oxy's Memory Box - Adventures through four-legged eyes loaded! 🐕📷");
-         
-function deleteCurrentImage() {
-    const deleteBtn = document.getElementById('deleteBtn');
-    const deleteSpinner = document.getElementById('deleteSpinner');
-    const deleteText = document.getElementById('deleteText');
-    
-    // Get currently selected image
-    const selectedThumbnail = document.querySelector('.thumbnail.selected img');
-    if (!selectedThumbnail) {
-        alert('No image selected');
-        return;
-    }
-    
-    // Extract image ID WITH extension from the src
-    const imageSrc = selectedThumbnail.src;
-    console.log('Image src:', imageSrc);
-    const imageId = imageSrc.split('/images/')[1]; // Keep the full filename WITH extension
-    console.log('Extracted image ID:', imageId);
-    
-    if (confirm('Are you sure you want to remove this adventure?')) {
-        // Show loading state
-        if (deleteSpinner) deleteSpinner.style.display = 'inline-block';
-        if (deleteText) deleteText.textContent = 'Removing Adventure...';
-        deleteBtn.disabled = true;
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuToggle = document.querySelector('.menu-toggle');
         
-        // Make delete request
-        fetch(`/delete/${imageId}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Delete response:', data);
-            if (data.status === 'success') {
-                // Reload the page to refresh the gallery
-                location.reload();
-            } else {
-                throw new Error(data.message || 'Delete failed');
-            }
-        })
-        .catch(error => {
-            console.error('Error deleting image:', error);
-            alert(`Failed to delete image: ${error.message}. Please check the console for details.`);
-            
-            // Reset button state
-            if (deleteSpinner) deleteSpinner.style.display = 'none';
-            if (deleteText) deleteText.textContent = '🗑️ Remove This Adventure';
-            deleteBtn.disabled = false;
-        });
-    }
-}
+        if (mobileMenu && menuToggle && !mobileMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+            mobileMenu.classList.remove('open');
+        }
+    });
 
-    </script>
+    // Initialize accessibility attributes and set first image as selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        
+        if (thumbnails.length > 0) {
+            // If no thumbnail is selected, select the first one
+            let selected = document.querySelector('.thumbnail.selected');
+            if (!selected) {
+                const firstThumbnail = thumbnails[0];
+                const firstImg = firstThumbnail.querySelector('img');
+                if (firstImg) {
+                    const imageUrl = firstImg.src.split('/images/')[1];
+                    selectImage(imageUrl);
+                }
+            } else {
+                // Get the currently selected image
+                const selectedImg = selected.querySelector('img');
+                if (selectedImg) {
+                    currentSelectedImage = selectedImg.src.split('/images/')[1];
+                }
+            }
+            
+            selected.setAttribute('aria-pressed', 'true');
+        }
+        
+        document.querySelectorAll('.thumbnail:not(.selected)').forEach(el => {
+            el.setAttribute('aria-pressed', 'false');
+        });
+
+        // Update delete button state on load
+        updateDeleteButtonState();
+    });
+
+    function deleteCurrentImage() {
+        const deleteBtn = document.getElementById('deleteBtn');
+        const deleteSpinner = document.getElementById('deleteSpinner');
+        const deleteText = document.getElementById('deleteText');
+        
+        // Use the tracked selected image
+        if (!currentSelectedImage) {
+            alert('Please select an image from the thumbnail gallery first');
+            return;
+        }
+        
+        console.log('Deleting image:', currentSelectedImage);
+        
+        if (confirm('Are you sure you want to remove this adventure?')) {
+            // Show loading state
+            if (deleteSpinner) deleteSpinner.style.display = 'inline-block';
+            if (deleteText) deleteText.textContent = 'Removing Adventure...';
+            deleteBtn.disabled = true;
+            
+            // Make delete request
+            fetch(`/images/${currentSelectedImage}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Delete response:', data);
+                if (data.status === 'success') {
+                    // Remove the deleted thumbnail from DOM
+                    const thumbnails = document.querySelectorAll('.thumbnail');
+                    thumbnails.forEach(thumbnail => {
+                        const img = thumbnail.querySelector('img');
+                        if (img && img.src.includes(currentSelectedImage)) {
+                            thumbnail.remove();
+                        }
+                    });
+                    
+                    // Select next available image or reload if no images left
+                    const remainingThumbnails = document.querySelectorAll('.thumbnail');
+                    if (remainingThumbnails.length > 0) {
+                        const firstImg = remainingThumbnails[0].querySelector('img');
+                        if (firstImg) {
+                            const nextImageUrl = firstImg.src.split('/images/')[1];
+                            selectImage(nextImageUrl);
+                        }
+                    } else {
+                        // No images left, reload page
+                        location.reload();
+                    }
+                } else {
+                    throw new Error(data.message || 'Delete failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting image:', error);
+                alert(`Failed to delete image: ${error.message}. Please check the console for details.`);
+            })
+            .finally(() => {
+                // Reset button state
+                if (deleteSpinner) deleteSpinner.style.display = 'none';
+                if (deleteText) deleteText.textContent = '🗑️ Remove This Adventure';
+                deleteBtn.disabled = false;
+                updateDeleteButtonState();
+            });
+        }
+    }
+
+    console.log("Oxy's Memory Box - Adventures through four-legged eyes loaded! 🐕📷");
+</script>
+
 </body>
 </html>
