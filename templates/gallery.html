@@ -326,7 +326,7 @@
             min-height: 0;
         }
 
-        /* Gallery Grid */
+        /* Gallery Grid - Modified to give more space to QR section */
         .gallery-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -337,13 +337,13 @@
 
         @media (min-width: 768px) {
             .gallery-grid {
-                grid-template-columns: 250px 1fr 220px;
+                grid-template-columns: 220px 1fr 30vw; /* QR section gets 30% of viewport width */
             }
         }
 
         @media (min-width: 1200px) {
             .gallery-grid {
-                grid-template-columns: 280px 1fr 250px;
+                grid-template-columns: 250px 1fr 30vw; /* QR section gets 30% of viewport width */
             }
         }
 
@@ -506,7 +506,7 @@
             opacity: 0.9;
         }
 
-        /* QR Section */
+        /* QR Section - Enhanced to use more space */
         .qr-section {
             display: flex;
             flex-direction: column;
@@ -521,13 +521,13 @@
 
         .qr-title {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 1rem; /* Slightly larger title */
             margin-bottom: 0.25rem;
         }
 
         .qr-subtitle {
             color: hsl(var(--muted-foreground));
-            font-size: 0.75rem;
+            font-size: 0.8rem; /* Slightly larger subtitle */
         }
 
         .qr-container {
@@ -536,33 +536,34 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 0 1rem;
+            padding: 1rem; /* More padding */
             min-height: 0;
         }
 
         .qr-code {
             width: 100%;
-            max-width: 140px;
+            max-width: none; /* Remove max-width constraint */
             aspect-ratio: 1;
             background: hsl(var(--muted));
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg); /* Larger border radius */
             display: block;
-            padding: 0.5rem;
+            padding: 1rem; /* More padding */
             object-fit: contain;
+            box-shadow: var(--shadow-lg); /* Add shadow for better visibility */
         }
 
         .qr-text {
-            font-size: 0.75rem;
+            font-size: 0.8rem; /* Slightly larger text */
             color: hsl(var(--muted-foreground));
-            margin-top: 0.5rem;
+            margin-top: 0.75rem; /* More margin */
             text-align: center;
         }
 
         .qr-actions {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            padding: 1rem;
+            gap: 0.75rem; /* More gap */
+            padding: 1rem 1.5rem; /* More padding */
             flex-shrink: 0;
         }
 
@@ -680,7 +681,7 @@
             outline-offset: 2px;
         }
 
-        /* Mobile Responsive */
+        /* Mobile Responsive - Updated for larger QR */
         @media (max-width: 767px) {
             .header-container {
                 padding: 0 0.75rem;
@@ -703,7 +704,7 @@
             }
 
             .gallery-grid {
-                grid-template-rows: 120px 1fr 200px;
+                grid-template-rows: 120px 1fr 40vh; /* Give more space to QR on mobile */
                 gap: 0.75rem;
             }
 
@@ -720,8 +721,12 @@
                 aspect-ratio: 1;
             }
 
+            .qr-container {
+                padding: 1.5rem; /* More padding on mobile */
+            }
+
             .qr-code {
-                max-width: 100px;
+                padding: 1.5rem; /* More padding for QR on mobile */
             }
 
             .btn {
