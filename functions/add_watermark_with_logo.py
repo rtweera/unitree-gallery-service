@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 import os
 import sys
 from io import BytesIO
@@ -8,7 +8,7 @@ from utils.image_utils import load_font, save_image_watermark, draw_rounded_rect
 def add_watermark_with_logo(image_content, 
                            watermark_text="Snapped by Oxy at WSO2Con Asia",
                            output_path=None,
-                           font_size=30,
+                           font_size=90,
                            font_color=(255, 255, 255),
                            add_box=True,
                            box_color=(0, 0, 0),
@@ -25,7 +25,11 @@ def add_watermark_with_logo(image_content,
                            logo_size=(400, 400),
                            logo_opacity=255,
                            logo_margin=20,
-                           preserve_logo_aspect=True):
+                           preserve_logo_aspect=True,
+                           logo_blur_background=True,
+                           blur_radius=15,
+                           blur_area_padding=30,
+                           blur_opacity=180):
     """
     Add a text watermark and logo to an image from byte content with optional background box.
     Preserves original image dimensions and aspect ratio.
@@ -52,6 +56,10 @@ def add_watermark_with_logo(image_content,
         logo_opacity (int): Transparency of logo (0-255)
         logo_margin (int): Margin from edges for logo placement
         preserve_logo_aspect (bool): Whether to preserve logo aspect ratio when resizing
+        logo_blur_background (bool): Whether to add blur effect behind logo
+        blur_radius (int): Radius of the blur effect (higher = more blur)
+        blur_area_padding (int): Padding around logo for blur area
+        blur_opacity (int): Opacity of the blur overlay (0-255)
     
     Returns:
         PIL.Image or str: Watermarked image object if output_path is None, else path to saved image
@@ -100,20 +108,6 @@ def add_watermark_with_logo(image_content,
                 elif logo_size:
                     logo = logo.resize(logo_size, Image.Resampling.LANCZOS)
                 
-                # Apply opacity to logo
-                if logo_opacity < 255:
-                    logo_with_opacity = Image.new('RGBA', logo.size, (0, 0, 0, 0))
-                    for x in range(logo.width):
-                        for y in range(logo.height):
-                            pixel = logo.getpixel((x, y))
-                            if isinstance(pixel, tuple) and len(pixel) == 4:
-                                r, g, b, a = pixel
-                            else:
-                                r, g, b, a = 0, 0, 0, 0  # Default to fully transparent if invalid
-                            new_alpha = int(a * (logo_opacity / 255))
-                            logo_with_opacity.putpixel((x, y), (r, g, b, new_alpha))
-                    logo = logo_with_opacity
-                
                 # Calculate logo position
                 img_width, img_height = original_size
                 logo_width, logo_height = logo.size
@@ -127,11 +121,63 @@ def add_watermark_with_logo(image_content,
                 }
                 
                 logo_x, logo_y = logo_position_map.get(logo_position, logo_position_map['top-left'])
+                
+                # Add blur background behind logo if enabled
+                if logo_blur_background:
+                    # Calculate blur area coordinates
+                    blur_x1 = max(0, logo_x - blur_area_padding)
+                    blur_y1 = max(0, logo_y - blur_area_padding)
+                    blur_x2 = min(img_width, logo_x + logo_width + blur_area_padding)
+                    blur_y2 = min(img_height, logo_y + logo_height + blur_area_padding)
+                    
+                    # Create blur area
+                    blur_area = working_image.crop((blur_x1, blur_y1, blur_x2, blur_y2))
+                    blurred_area = blur_area.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+                    
+                    # Create mask for the blur area with rounded corners
+                    blur_mask = Image.new('L', (blur_x2 - blur_x1, blur_y2 - blur_y1), 0)
+                    blur_mask_draw = ImageDraw.Draw(blur_mask)
+                    
+                    # Draw rounded rectangle mask for smooth blur edges
+                    mask_corner_radius = min(20, (blur_x2 - blur_x1) // 4, (blur_y2 - blur_y1) // 4)
+                    blur_mask_draw.rounded_rectangle(
+                        [0, 0, blur_x2 - blur_x1, blur_y2 - blur_y1],
+                        radius=mask_corner_radius,
+                        fill=blur_opacity
+                    )
+                    
+                    # Apply blur with opacity
+                    blurred_with_opacity = Image.new('RGBA', blurred_area.size, (0, 0, 0, 0))
+                    blurred_rgba = blurred_area.convert('RGBA')
+                    
+                    # Apply the mask to create smooth edges
+                    for x in range(blurred_rgba.width):
+                        for y in range(blurred_rgba.height):
+                            r, g, b, a = blurred_rgba.getpixel((x, y))
+                            mask_value = blur_mask.getpixel((x, y))
+                            new_alpha = int(mask_value)
+                            blurred_with_opacity.putpixel((x, y), (r, g, b, new_alpha))
+                    
+                    # Paste the blurred area onto the overlay
+                    overlay_layer.paste(blurred_with_opacity, (blur_x1, blur_y1), blurred_with_opacity)
+                
+                # Apply opacity to logo
+                if logo_opacity < 255:
+                    logo_with_opacity = Image.new('RGBA', logo.size, (0, 0, 0, 0))
+                    for x in range(logo.width):
+                        for y in range(logo.height):
+                            r, g, b, a = logo.getpixel((x, y))
+                            new_alpha = int(a * (logo_opacity / 255))
+                            logo_with_opacity.putpixel((x, y), (r, g, b, new_alpha))
+                    logo = logo_with_opacity
+                
+                # Paste the logo
                 overlay_layer.paste(logo, (logo_x, logo_y), logo)
                 
             except Exception as logo_error:
                 print(f"Warning: Could not add logo - {str(logo_error)}")
         
+        # ...existing code...
         # Load font
         font = load_font(font_size)
         
@@ -205,18 +251,22 @@ def add_watermark_with_logo(image_content,
     except Exception as e:
         raise Exception(f"Error adding watermark: {str(e)}")
 
-if __name__ == "__main__":
-    try:
-        # Example with image byte content
-        with open("../images/test.jpg", "rb") as f:
-            image_content = f.read()
+# if __name__ == "__main__":
+#     try:
+#         # Example with image byte content and logo blur
+#         with open("../images/test.jpg", "rb") as f:
+#             image_content = f.read()
         
-        result = add_watermark_with_logo(
-            image_content=image_content,
-            output_path="../images/watermarked_test.jpg",
-            logo_path="../static/logo.png"
-        )
-        print(f"Watermark with logo saved to: {result}")
+#         result = add_watermark_with_logo(
+#             image_content=image_content,
+#             output_path="../images/watermarked_test.jpg",
+#             logo_path="../static/logo.png",
+#             logo_blur_background=True,
+#             blur_radius=20,
+#             blur_area_padding=40,
+#             blur_opacity=150
+#         )
+#         print(f"Watermark with logo and blur saved to: {result}")
         
-    except Exception as e:
-        print(f"Error: {e}")
+#     except Exception as e:
+#         print(f"Error: {e}")
