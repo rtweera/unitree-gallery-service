@@ -1,6 +1,6 @@
 import os
 from uuid import uuid4
-import qrcode
+import qrcode 
 from dotenv import load_dotenv
 from .constants import IMG_EXT, QR_EXT, IMAGES_DIR, QR_DIR
 
@@ -29,8 +29,8 @@ def save_image(image_data: bytes, images_dir: str = IMAGES_DIR) -> str:
     if not os.path.exists(images_dir):
         os.makedirs(images_dir)
 
-    image_id = uuid4()
-    image_file_name = f"img_{image_id}.jpg"
+    image_id = f"img_{uuid4()}"
+    image_file_name = f"{image_id}{IMG_EXT}"
     image_path = os.path.join(images_dir, image_file_name)
     
     with open(image_path, "wb") as f:
