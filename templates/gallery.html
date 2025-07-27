@@ -366,7 +366,8 @@
         }
 
         .thumbnail-grid {
-            flex: 1;
+            /* flex: 1; */
+            align-items: flex-start;
             padding: 0 1rem 1rem;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -388,7 +389,10 @@
             overflow: visible;
             transition: var(--transition);
             border: 2px solid transparent;
-            aspect-ratio: 16/10;
+            /* aspect-ratio: 16/10; */
+            max-width: 100%;
+            max-height: fit-content;
+            object-fit: contain;
         }
 
         .thumbnail:hover {
@@ -403,8 +407,8 @@
 
         .thumbnail img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            /* height: 100%; */
+            object-fit: contain;
             display: block;
         }
 
@@ -858,9 +862,9 @@
                          aria-label="View Oxy's adventure {{ loop.index }}"
                          onkeydown="handleThumbnailKeydown(event, '{{ image_url }}')">
                         <img src="/images/{{ image_url }}" alt="Oxy's discovery {{ loop.index }}" loading="lazy">
-                        <div class="thumbnail-overlay">
+                        <!-- <div class="thumbnail-overlay">
                             <div class="thumbnail-text">Adventure {{ loop.index }}</div>
-                        </div>
+                        </div> -->
                         <div class="thumbnail-indicator"></div>
                     </div>
                     {% endfor %}
