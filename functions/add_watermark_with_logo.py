@@ -98,7 +98,11 @@ def add_watermark_with_logo(image_path,
                     logo_with_opacity = Image.new('RGBA', logo.size, (0, 0, 0, 0))
                     for x in range(logo.width):
                         for y in range(logo.height):
-                            r, g, b, a = logo.getpixel((x, y))
+                            pixel = logo.getpixel((x, y))
+                            if isinstance(pixel, tuple) and len(pixel) == 4:
+                                r, g, b, a = pixel
+                            else:
+                                r, g, b, a = 0, 0, 0, 0  # Default to fully transparent if invalid
                             new_alpha = int(a * (logo_opacity / 255))
                             logo_with_opacity.putpixel((x, y), (r, g, b, new_alpha))
                     logo = logo_with_opacity

@@ -38,7 +38,7 @@ def save_image(image, output_path, original_size):
         output_image = image
         save_format = 'WebP'
     elif output_extension == '.gif':
-        output_image = image.convert('P', palette=Image.ADAPTIVE)
+        output_image = image.convert('P', palette=Image.Palette.ADAPTIVE)
         save_format = 'GIF'
     else:
         output_image = image
