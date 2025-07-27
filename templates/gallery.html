@@ -107,9 +107,12 @@
         }
 
         .gallery-actions {
+               margin: 0rem 0rem 0.5rem 0rem;
+            padding: auto;
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
         }
 
         .badge {
@@ -607,9 +610,12 @@
                 </div>
             </div>
 
+             {% if images_exist %}
+                <div class="badge">{{ image_urls|length }} Tail-Wagging Moments</div>
+                {% endif %}
            
 
-            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+          
         </div>
 
         
@@ -624,9 +630,7 @@
         <div class="gallery-header">
             
             <div class="gallery-actions">
-                {% if images_exist %}
-                <div class="badge">{{ image_urls|length }} Tail-Wagging Moments</div>
-                {% endif %}
+               
                 <button class="btn" onclick="refreshGallery()" id="refreshBtn">
                     <span id="refreshIcon">🔄</span>
                     <span id="refreshText">Check for New Adventures</span>

@@ -21,7 +21,7 @@ def load_font(font_size):
     return ImageFont.load_default()
 
 
-def save_image(image, output_path, original_size):
+def save_image_watermark(image, output_path, original_size):
     """Save image with appropriate format conversion"""
     output_extension = os.path.splitext(output_path)[1].lower()
     
