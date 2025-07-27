@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import pytz
 from .constants import IMG_EXT, QR_EXT, IMAGES_DIR, QR_DIR
 
+
 load_dotenv(verbose=True, override=True)
 
 def get_image_stats(image_path: str) -> dict:

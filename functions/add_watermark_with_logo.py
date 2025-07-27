@@ -1,11 +1,12 @@
 from PIL import Image, ImageDraw
 import os
 import sys
+from io import BytesIO
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.image_utils import load_font, save_image, draw_rounded_rectangle, draw_rounded_rectangle_border
+from utils.image_utils import load_font, save_image_watermark, draw_rounded_rectangle, draw_rounded_rectangle_border
 
-def add_watermark_with_logo(image_path, 
-                           watermark_text="Snapped by Oxy's at WSO2Con Asia",
+def add_watermark_with_logo(image_content, 
+                           watermark_text="Snapped by Oxy at WSO2Con Asia",
                            output_path=None,
                            font_size=30,
                            font_color=(255, 255, 255),
@@ -26,11 +27,11 @@ def add_watermark_with_logo(image_path,
                            logo_margin=20,
                            preserve_logo_aspect=True):
     """
-    Add a text watermark and logo to an image with optional background box.
+    Add a text watermark and logo to an image from byte content with optional background box.
     Preserves original image dimensions and aspect ratio.
     
     Args:
-        image_path (str): Path to the input image
+        image_content (bytes): Image byte content
         watermark_text (str): Text to use as watermark
         output_path (str, optional): Path to save the watermarked image
         font_size (int): Size of the watermark font
@@ -57,8 +58,9 @@ def add_watermark_with_logo(image_path,
     """
     
     try:
-        # Open and prepare the image
-        original_image = Image.open(image_path)
+        # Open image from byte content
+        image_stream = BytesIO(image_content)
+        original_image = Image.open(image_stream)
         original_size = original_image.size
         print(f"Original image dimensions: {original_size[0]}x{original_size[1]}")
         
@@ -70,8 +72,13 @@ def add_watermark_with_logo(image_path,
         draw = ImageDraw.Draw(overlay_layer)
         
         # Add logo if provided
+        if logo_path is None:
+            print("No logo path provided, skipping logo addition.")
+        if logo_path and not os.path.exists(logo_path):
+            print(f"Warning: Logo file '{logo_path}' does not exist. Skipping logo addition. OS path {os.getcwd()}")
         if logo_path and os.path.exists(logo_path):
             try:
+                print("Logo function inside try")
                 logo = Image.open(logo_path).convert('RGBA')
                 original_logo_size = logo.size
                 print(f"Original logo dimensions: {original_logo_size[0]}x{original_logo_size[1]}")
@@ -191,7 +198,7 @@ def add_watermark_with_logo(image_path,
         
         # Save or return the image
         if output_path:
-            return save_image(final_image, output_path, original_size)
+            return save_image_watermark(final_image, output_path, original_size)
         else:
             return final_image
             
@@ -200,21 +207,16 @@ def add_watermark_with_logo(image_path,
 
 if __name__ == "__main__":
     try:
-        # Example with logo
+        # Example with image byte content
+        with open("../images/test.jpg", "rb") as f:
+            image_content = f.read()
+        
         result = add_watermark_with_logo(
-            image_path="../images/test.jpg",
-            
+            image_content=image_content,
+            output_path="../images/watermarked_test.jpg",
             logo_path="../static/logo.png"
         )
         print(f"Watermark with logo saved to: {result}")
-        
-        # Example without logo
-        result2 = add_watermark_with_logo(
-            image_path="../images/test.jpg",
-          
-        )
-        print(f"Text-only watermark saved to: {result2}")
-        print(result)
         
     except Exception as e:
         print(f"Error: {e}")
