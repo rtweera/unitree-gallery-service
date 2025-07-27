@@ -6,6 +6,19 @@
     <title>Oxy's Gallery</title>
     <link href="/static/favicon.ico" rel="icon" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        setInterval(async function () {
+            try {
+                const res = await fetch("/refresh");
+                const data = await res.json();
+                if (data.should_refresh) {
+                    window.location.reload();
+                }
+            } catch (e) {
+                console.error("Polling error:", e);
+            }
+        }, 1000); // every 1 second
+    </script>
         <style>
         :root {
             /* Modern Design System */
