@@ -162,6 +162,151 @@
             transform: translateY(-1px);
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: hsl(var(--card));
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            max-width: 420px;
+            width: 90%;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 0;
+            text-align: center;
+        }
+
+        .modal-icon {
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-description {
+            color: hsl(var(--muted-foreground));
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .modal-body {
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-image-preview {
+            width: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+
+        .modal-warning {
+            background: #fef3cd;
+            border: 1px solid #fde68a;
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .modal-warning-icon {
+            color: #d97706;
+            font-size: 1rem;
+            margin-top: 0.1rem;
+        }
+
+        .modal-warning-text {
+            font-size: 0.8rem;
+            color: #92400e;
+        }
+
+        .modal-actions {
+            padding: 0 1.5rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 80px;
+            justify-content: center;
+        }
+
+        .modal-btn-cancel {
+            background: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border: 1px solid hsl(var(--border));
+        }
+
+        .modal-btn-cancel:hover {
+            background: hsl(var(--muted));
+        }
+
+        .modal-btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-btn-delete:hover {
+            background: #c82333;
+        }
+
+        .modal-btn-delete:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         /* Cards */
         .card {
             background: hsl(var(--card));
@@ -579,6 +724,20 @@
                 font-size: 0.75rem;
                 padding: 0.35rem 0.6rem;
             }
+
+            .modal {
+                margin: 1rem;
+                max-width: none;
+                width: calc(100% - 2rem);
+            }
+
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+            .modal-btn {
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -594,6 +753,29 @@
             
             .logo-text h1 {
                 font-size: 0.9rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes modalSlideOut {
+            from {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
             }
         }
     </style>
@@ -613,24 +795,44 @@
              {% if images_exist %}
                 <div class="badge">{{ image_urls|length }} Tail-Wagging Moments</div>
                 {% endif %}
-           
-
-          
         </div>
-
-        
     </header>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">🗑️</div>
+                <h3 class="modal-title">Remove Adventure?</h3>
+                <p class="modal-description">Are you sure you want to remove this precious memory from Oxy's collection?</p>
+            </div>
+            <div class="modal-body">
+                <img id="modalImagePreview" class="modal-image-preview" src="" alt="Image to delete">
+                <div class="modal-warning">
+                    <span class="modal-warning-icon">⚠️</span>
+                    <div class="modal-warning-text">
+                        <strong>This action cannot be undone.</strong><br>
+                        Once removed, this adventure will be gone forever from Oxy's memory box.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
+                    Keep Adventure
+                </button>
+                <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn" onclick="confirmDelete()">
+                    <span id="deleteModalSpinner" class="loading" style="display: none;"></span>
+                    <span id="deleteModalText">Remove Forever</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="main">
-        <!-- Breadcrumbs -->
-       
-
         <!-- Gallery Header -->
         <div class="gallery-header">
-            
             <div class="gallery-actions">
-               
                 <button class="btn" onclick="refreshGallery()" id="refreshBtn">
                     <span id="refreshIcon">🔄</span>
                     <span id="refreshText">Check for New Adventures</span>
@@ -809,6 +1011,40 @@
         }, 500);
     }
 
+    // Modal functions
+    function openDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        const modalImagePreview = document.getElementById('modalImagePreview');
+        
+        if (currentSelectedImage && modalImagePreview) {
+            modalImagePreview.src = '/images/' + currentSelectedImage;
+        }
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus on the modal for accessibility
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmBtn) {
+            setTimeout(() => confirmBtn.focus(), 100);
+        }
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        
+        // Reset modal state
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const spinner = document.getElementById('deleteModalSpinner');
+        const text = document.getElementById('deleteModalText');
+        
+        if (confirmBtn) confirmBtn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+        if (text) text.textContent = 'Remove Forever';
+    }
+
     // Toggle mobile menu
     function toggleMobileMenu() {
         const mobileMenu = document.getElementById('mobileMenu');
@@ -819,6 +1055,27 @@
 
     // Keyboard navigation
     document.addEventListener('keydown', function(event) {
+        // Close modal on Escape
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('deleteModal');
+            if (modal.classList.contains('active')) {
+                closeDeleteModal();
+                return;
+            }
+            
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileMenu) {
+                mobileMenu.classList.remove('open');
+            }
+        }
+        
+        // Don't handle other keys if modal is open
+        const modal = document.getElementById('deleteModal');
+        if (modal.classList.contains('active')) {
+            return;
+        }
+        
         if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
             const thumbnails = Array.from(document.querySelectorAll('.thumbnail'));
             const selected = document.querySelector('.thumbnail.selected');
@@ -843,20 +1100,22 @@
                     nextThumbnail.focus();
                 }
             }
-        } else if (event.key === 'Escape') {
-            // Close mobile menu if open
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileMenu) {
-                mobileMenu.classList.remove('open');
-            }
         } else if (event.key === 'Delete' && currentSelectedImage) {
-            // Allow deletion with Delete key
+            // Allow deletion with Delete key - open modal instead of direct delete
             deleteCurrentImage();
         }
     });
 
-    // Close mobile menu when clicking outside
+    // Close modal when clicking on overlay
     document.addEventListener('click', function(event) {
+        const modal = document.getElementById('deleteModal');
+        const modalContent = modal.querySelector('.modal');
+        
+        if (event.target === modal && !modalContent.contains(event.target)) {
+            closeDeleteModal();
+        }
+        
+        // Close mobile menu when clicking outside
         const mobileMenu = document.getElementById('mobileMenu');
         const menuToggle = document.querySelector('.menu-toggle');
         
@@ -899,78 +1158,168 @@
     });
 
     function deleteCurrentImage() {
-        const deleteBtn = document.getElementById('deleteBtn');
-        const deleteSpinner = document.getElementById('deleteSpinner');
-        const deleteText = document.getElementById('deleteText');
-        
         // Use the tracked selected image
         if (!currentSelectedImage) {
-            alert('Please select an image from the thumbnail gallery first');
+            // Show a nice notification instead of alert
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #fee2e2;
+                color: #991b1b;
+                padding: 1rem;
+                border-radius: 8px;
+                border: 1px solid #fecaca;
+                z-index: 1001;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <span>Please select an image from the thumbnail gallery first</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
             return;
         }
         
-        console.log('Deleting image:', currentSelectedImage);
+        console.log('Opening delete modal for image:', currentSelectedImage);
+        openDeleteModal();
+    }
+
+    function confirmDelete() {
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const spinner = document.getElementById('deleteModalSpinner');
+        const text = document.getElementById('deleteModalText');
         
-        if (confirm('Are you sure you want to remove this adventure?')) {
-            // Show loading state
-            if (deleteSpinner) deleteSpinner.style.display = 'inline-block';
-            if (deleteText) deleteText.textContent = 'Removing Adventure...';
-            deleteBtn.disabled = true;
-            
-            // Make delete request
-            fetch(`/images/${currentSelectedImage}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Delete response:', data);
-                if (data.status === 'success') {
-                    // Remove the deleted thumbnail from DOM
-                    const thumbnails = document.querySelectorAll('.thumbnail');
-                    thumbnails.forEach(thumbnail => {
-                        const img = thumbnail.querySelector('img');
-                        if (img && img.src.includes(currentSelectedImage)) {
-                            thumbnail.remove();
-                        }
-                    });
-                    
-                    // Select next available image or reload if no images left
-                    const remainingThumbnails = document.querySelectorAll('.thumbnail');
-                    if (remainingThumbnails.length > 0) {
-                        const firstImg = remainingThumbnails[0].querySelector('img');
-                        if (firstImg) {
-                            const nextImageUrl = firstImg.src.split('/images/')[1];
-                            selectImage(nextImageUrl);
-                        }
-                    } else {
-                        // No images left, reload page
-                        location.reload();
+        // Show loading state
+        if (spinner) spinner.style.display = 'inline-block';
+        if (text) text.textContent = 'Removing...';
+        confirmBtn.disabled = true;
+        
+        // Make delete request
+        fetch(`/images/${currentSelectedImage}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Delete response:', data);
+            if (data.status === 'success') {
+                // Close modal first
+                closeDeleteModal();
+                
+                // Show success notification
+                showNotification('Adventure removed successfully! 🐕', 'success');
+                
+                // Remove the deleted thumbnail from DOM
+                const thumbnails = document.querySelectorAll('.thumbnail');
+                thumbnails.forEach(thumbnail => {
+                    const img = thumbnail.querySelector('img');
+                    if (img && img.src.includes(currentSelectedImage)) {
+                        thumbnail.remove();
+                    }
+                });
+                
+                // Select next available image or reload if no images left
+                const remainingThumbnails = document.querySelectorAll('.thumbnail');
+                if (remainingThumbnails.length > 0) {
+                    const firstImg = remainingThumbnails[0].querySelector('img');
+                    if (firstImg) {
+                        const nextImageUrl = firstImg.src.split('/images/')[1];
+                        selectImage(nextImageUrl);
                     }
                 } else {
-                    throw new Error(data.message || 'Delete failed');
+                    // No images left, reload page
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 }
-            })
-            .catch(error => {
-                console.error('Error deleting image:', error);
-                alert(`Failed to delete image: ${error.message}. Please check the console for details.`);
-            })
-            .finally(() => {
-                // Reset button state
-                if (deleteSpinner) deleteSpinner.style.display = 'none';
-                if (deleteText) deleteText.textContent = '🗑️ Remove This Adventure';
-                deleteBtn.disabled = false;
-                updateDeleteButtonState();
-            });
+            } else {
+                throw new Error(data.message || 'Delete failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting image:', error);
+            closeDeleteModal();
+            showNotification(`Failed to delete image: ${error.message}`, 'error');
+        });
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        const bgColor = type === 'success' ? '#dcfce7' : type === 'error' ? '#fee2e2' : '#e0f2fe';
+        const textColor = type === 'success' ? '#166534' : type === 'error' ? '#991b1b' : '#0c4a6e';
+        const borderColor = type === 'success' ? '#bbf7d0' : type === 'error' ? '#fecaca' : '#bae6fd';
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${bgColor};
+            color: ${textColor};
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid ${borderColor};
+            z-index: 1001;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease-out;
+            max-width: 300px;
+            font-weight: 500;
+        `;
+        
+        // Add animation keyframes to document if not already present
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOutRight {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         }
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
     }
 
     console.log("Oxy's Memory Box - Adventures through four-legged eyes loaded! 🐕📷");
