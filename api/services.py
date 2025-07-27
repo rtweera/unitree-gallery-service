@@ -54,12 +54,12 @@ def get_qr_files(qr_dir: str = QR_DIR):
     return qr_files
 
 def get_basename_images(images_dir: str = IMAGES_DIR):
-    """Get a list of image filenames without paths"""
+    """Get a list of image filenames without paths (latest 20 only)"""
     image_files = sorted(
         [os.path.splitext(f)[0] for f in os.listdir(images_dir) if f.endswith(IMG_EXT)],
         key=lambda x: os.path.getmtime(os.path.join(images_dir, x + IMG_EXT)),
         reverse=True
-    )
+    )[:20]  
     return image_files
 
 def save_image(image_data: bytes, images_dir: str = IMAGES_DIR) -> str:
