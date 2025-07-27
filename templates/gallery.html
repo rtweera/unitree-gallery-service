@@ -837,7 +837,63 @@
         });
 
         console.log("Oxy's Memory Box - Adventures through four-legged eyes loaded! 🐕📷");
-       
+         
+function deleteCurrentImage() {
+    const deleteBtn = document.getElementById('deleteBtn');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const deleteText = document.getElementById('deleteText');
+    
+    // Get currently selected image
+    const selectedThumbnail = document.querySelector('.thumbnail.selected img');
+    if (!selectedThumbnail) {
+        alert('No image selected');
+        return;
+    }
+    
+    // Extract image ID WITH extension from the src
+    const imageSrc = selectedThumbnail.src;
+    console.log('Image src:', imageSrc);
+    const imageId = imageSrc.split('/images/')[1]; // Keep the full filename WITH extension
+    console.log('Extracted image ID:', imageId);
+    
+    if (confirm('Are you sure you want to remove this adventure?')) {
+        // Show loading state
+        if (deleteSpinner) deleteSpinner.style.display = 'inline-block';
+        if (deleteText) deleteText.textContent = 'Removing Adventure...';
+        deleteBtn.disabled = true;
+        
+        // Make delete request
+        fetch(`/delete/${imageId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Delete response:', data);
+            if (data.status === 'success') {
+                // Reload the page to refresh the gallery
+                location.reload();
+            } else {
+                throw new Error(data.message || 'Delete failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting image:', error);
+            alert(`Failed to delete image: ${error.message}. Please check the console for details.`);
+            
+            // Reset button state
+            if (deleteSpinner) deleteSpinner.style.display = 'none';
+            if (deleteText) deleteText.textContent = '🗑️ Remove This Adventure';
+            deleteBtn.disabled = false;
+        });
+    }
+}
+
     </script>
 </body>
 </html>
