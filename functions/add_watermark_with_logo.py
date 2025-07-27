@@ -72,8 +72,13 @@ def add_watermark_with_logo(image_content,
         draw = ImageDraw.Draw(overlay_layer)
         
         # Add logo if provided
+        if logo_path is None:
+            print("No logo path provided, skipping logo addition.")
+        if logo_path and not os.path.exists(logo_path):
+            print(f"Warning: Logo file '{logo_path}' does not exist. Skipping logo addition. OS path {os.getcwd()}")
         if logo_path and os.path.exists(logo_path):
             try:
+                print("Logo function inside try")
                 logo = Image.open(logo_path).convert('RGBA')
                 original_logo_size = logo.size
                 print(f"Original logo dimensions: {original_logo_size[0]}x{original_logo_size[1]}")
