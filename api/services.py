@@ -3,6 +3,7 @@ from uuid import uuid4
 import qrcode
 from dotenv import load_dotenv
 
+
 load_dotenv(verbose=True, override=True)
 
 # Ensure directories exist

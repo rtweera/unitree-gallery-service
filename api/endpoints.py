@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from .services import get_images, save_image, get_image_path, generate_qr_code, get_basename_images
+from functions.add_watermark_with_logo import add_watermark_with_logo
 
 # from .service import ImageService
 
@@ -38,21 +39,33 @@ async def get_stats():
 # =========================
 @router.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
-    """Upload an image file and save it locally in images folder"""
+    """Upload an image file, add watermark and logo, then save it locally in images folder"""
     try:
         # Read the uploaded file content
         content = await file.read()
         
-        # Save the image to the images directory
-        image_path = save_image(content)
-        if not image_path:
+        # Add watermark and logo to the image
+        watermarked_image = add_watermark_with_logo(
+            image_content=content,
+            logo_path="static/logo.png"  # Adjust path as needed
+        )
+        
+        # Generate output path
+        output_path = f"images/watermarked_{file.filename}"
+        
+        # Save the watermarked image
+        saved_path = save_image(watermarked_image, output_path, watermarked_image.size)
+        
+        if not saved_path:
             raise HTTPException(status_code=500, detail="Failed to save image")        
+        
         return {
-            "status": "Image captured and uploaded successfully",
-            "path": image_path
+            "status": "Image captured, watermarked and uploaded successposfully",
+            "path": saved_path
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
 
 @router.get("/image", response_class=FileResponse)
 async def serve_latest_image():
