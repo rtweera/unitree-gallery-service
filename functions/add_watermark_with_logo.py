@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.image_utils import load_font, save_image_watermark, draw_rounded_rectangle, draw_rounded_rectangle_border
 
 def add_watermark_with_logo(image_content, 
-                           watermark_text="Snapped by Oxy's at WSO2Con Asia",
+                           watermark_text="Snapped by Oxy at WSO2Con Asia",
                            output_path=None,
                            font_size=30,
                            font_color=(255, 255, 255),
