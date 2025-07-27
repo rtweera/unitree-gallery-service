@@ -199,7 +199,7 @@ if __name__ == "__main__":
         # Example with logo
         result = add_watermark_with_logo(
             image_path="../images/test.jpg",
-            output_path="watermarked_with_logo.jpg",
+            
             logo_path="../static/logo.png"
         )
         print(f"Watermark with logo saved to: {result}")
@@ -207,7 +207,7 @@ if __name__ == "__main__":
         # Example without logo
         result2 = add_watermark_with_logo(
             image_path="../images/test.jpg",
-            output_path="watermarked_text_only.jpg"
+          
         )
         print(f"Text-only watermark saved to: {result2}")
         print(result)
