@@ -3,7 +3,7 @@ import os
 import sys
 from io import BytesIO
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.image_utils import load_font, save_image, draw_rounded_rectangle, draw_rounded_rectangle_border
+from utils.image_utils import load_font, save_image_watermark, draw_rounded_rectangle, draw_rounded_rectangle_border
 
 def add_watermark_with_logo(image_content, 
                            watermark_text="Snapped by Oxy's at WSO2Con Asia",
@@ -189,7 +189,7 @@ def add_watermark_with_logo(image_content,
         
         # Save or return the image
         if output_path:
-            return save_image(final_image, output_path, original_size)
+            return save_image_watermark(final_image, output_path, original_size)
         else:
             return final_image
             

@@ -1,4 +1,6 @@
 import os
+import io
+from PIL import Image
 from fastapi import APIRouter, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -47,14 +49,21 @@ async def upload_image(file: UploadFile = File(...)):
         # Add watermark and logo to the image
         watermarked_image = add_watermark_with_logo(
             image_content=content,
-            logo_path="static/logo.png"  # Adjust path as needed
+            logo_path="../static/logo.png"  # Adjust path as needed
         )
-        
-        # Generate output path
-        output_path = f"images/watermarked_{file.filename}"
+                # Convert RGBA to RGB if needed (JPEG doesn't support alpha)
+        if watermarked_image.mode == 'RGBA':
+            # Create a white background
+            rgb_image = Image.new('RGB', watermarked_image.size, (255, 255, 255))
+            rgb_image.paste(watermarked_image, mask=watermarked_image.split()[-1])  # Use alpha as mask
+            watermarked_image = rgb_image
+        # Convert PIL Image to bytes
+        img_bytes = io.BytesIO()
+        watermarked_image.save(img_bytes, format='JPEG', quality=95)
+        watermarked_content = img_bytes.getvalue()
         
         # Save the watermarked image
-        saved_path = save_image(watermarked_image, output_path, watermarked_image.size)
+        saved_path = save_image(watermarked_content)
         
         if not saved_path:
             raise HTTPException(status_code=500, detail="Failed to save image")        
