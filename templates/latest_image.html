@@ -114,7 +114,7 @@
         <div class="content">
             {% if image_exists %}
             <div class="image-container">
-                <img src="/image" alt="Latest captured image" id="capturedImage">
+                <img src="/images/latest" alt="Latest captured image" id="capturedImage">
             </div>
             {% else %}
             <div class="no-image">
@@ -136,7 +136,7 @@
             // Add timestamp to force refresh
             const img = document.getElementById('capturedImage');
             if (img) {
-                img.src = 'image?' + new Date().getTime();
+                img.src = 'images/latest?' + new Date().getTime();
             } else {
                 // If no image currently shown, reload the page
                 window.location.reload();

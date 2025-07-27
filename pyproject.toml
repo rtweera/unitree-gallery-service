@@ -12,4 +12,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "python-multipart>=0.0.20",
     "qrcode>=7.4.2",
+    "pytz>=2025.2",
+    "pillow>=10.4.0",
 ]
