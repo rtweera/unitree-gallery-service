@@ -934,6 +934,26 @@
 <script>
     let currentSelectedImage = null; // Track the currently selected image
 
+    function updateBadgeCount() {
+        const badge = document.querySelector('.badge');
+        if (badge) {
+            const remainingCount = document.querySelectorAll('.thumbnail').length;
+            if (remainingCount > 0) {
+                badge.textContent = `${remainingCount} Tail-Wagging Moment${remainingCount !== 1 ? 's' : ''}`;
+                // Add a subtle animation to highlight the change
+                badge.style.transform = 'scale(1.1)';
+                badge.style.transition = 'transform 0.2s ease-out';
+                setTimeout(() => {
+                    badge.style.transform = 'scale(1)';
+                }, 200);
+            } else {
+                // Hide badge when no images left
+                badge.style.opacity = '0';
+                badge.style.transform = 'scale(0.8)';
+            }
+        }
+    }
+
     function basename(path) {
         return path.split('.').slice(0, -1).join('.');
     }
@@ -1234,6 +1254,9 @@
                         thumbnail.remove();
                     }
                 });
+                
+                // Update the badge count
+                updateBadgeCount();
                 
                 // Select next available image or reload if no images left
                 const remainingThumbnails = document.querySelectorAll('.thumbnail');
