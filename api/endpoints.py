@@ -120,7 +120,20 @@ async def download_image(image_id: str, rename_file: bool = True):
         headers={"Content-Disposition": f'attachment; filename="{file_name}"'}
     )
 
-@router.delete("/delete/{image_id}")
+@router.delete("/images/all")
+async def delete_all_images():
+    """Delete all images"""
+    if not os.getenv("ENABLE_DELETE_ALL", "False").lower() == "true":
+        raise HTTPException(status_code=503, detail="This endpoint has been disabled")
+    image_files = get_images()
+    qr_files = get_qr_files()
+    for image_path in image_files:
+        os.remove(image_path)
+    for qr_path in qr_files:
+        os.remove(qr_path)
+    return {"status": "success", "message": "All images deleted successfully"}
+
+@router.delete("/images/{image_id}")
 async def delete_image(image_id: str):
     """Delete the image file"""
     image_path = get_image_path(image_id + IMG_EXT)
@@ -134,18 +147,6 @@ async def delete_image(image_id: str):
         os.remove(qr_path)
     return {"status": "success", "message": "Image deleted successfully"}
 
-@router.delete("/delete/all")
-async def delete_all_images():
-    """Delete all images"""
-    if not os.getenv("ENABLE_DELETE_ALL", "False").lower() == "true":
-        raise HTTPException(status_code=503, detail="This endpoint has been disabled")
-    image_files = get_images()
-    qr_files = get_qr_files()
-    for image_path in image_files:
-        os.remove(image_path)
-    for qr_path in qr_files:
-        os.remove(qr_path)
-    return {"status": "success", "message": "All images deleted successfully"}
 
 @router.get("/qr/{image_id}")
 async def get_qr_code(image_id: str):
