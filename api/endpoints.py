@@ -21,6 +21,8 @@ def basename_filter(path):
     return os.path.splitext(os.path.basename(path))[0]
 templates.env.filters['basename'] = basename_filter
 
+# New image flag
+new_image_flag = False
 
 # STAT ENDPOINTS
 # =========================
@@ -67,6 +69,16 @@ async def get_stats():
         "qr_files": qr_files,
         "qr_stats": qr_stats
     }
+
+@router.get("/refresh")
+def check_for_new_images():
+    """Check for new images to refresh the gallery"""
+    global new_image_flag
+    if new_image_flag:
+        new_image_flag = False
+        return {"status": "success", "message": "New image detected", "should_refresh": True}
+    return {"status": "success", "message": "No new images detected", "should_refresh": False}
+
 # =======================
 
 # CONTROL ENDPOINTS
@@ -98,10 +110,14 @@ async def upload_image(file: UploadFile = File(...)):
         saved_path = save_image(watermarked_content)
         
         if not saved_path:
-            raise HTTPException(status_code=500, detail="Failed to save image")        
+            raise HTTPException(status_code=500, detail="Failed to save image")
         
+        # Set the new image flag
+        global new_image_flag
+        new_image_flag = True
+
         return {
-            "status": "Image captured, watermarked and uploaded successposfully",
+            "status": "Image captured, watermarked and uploaded successfully",
             "path": saved_path
         }
     except Exception as e:
