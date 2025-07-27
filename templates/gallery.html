@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oxy's Gallery</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        setInterval(async function () {
+            try {
+                const res = await fetch("/refresh");
+                const data = await res.json();
+                if (data.should_refresh) {
+                    window.location.reload();
+                }
+            } catch (e) {
+                console.error("Polling error:", e);
+            }
+        }, 1000); // every 1 second
+    </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
