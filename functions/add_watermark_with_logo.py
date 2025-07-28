@@ -1,9 +1,9 @@
 from PIL import Image, ImageDraw, ImageFilter
+from io import BytesIO
 import os
 import sys
-from io import BytesIO
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.image_utils import load_font, save_image_watermark, draw_rounded_rectangle, draw_rounded_rectangle_border
+from utils.image_utils import load_font, draw_rounded_rectangle, save_image_watermark, draw_rounded_rectangle_border
 
 def add_watermark_with_logo(image_content, 
                            watermark_text="Snapped by Oxy at WSO2Con Asia",
@@ -29,37 +29,26 @@ def add_watermark_with_logo(image_content,
                            logo_blur_background=True,
                            blur_radius=15,
                            blur_area_padding=30,
-                           blur_opacity=180):
+                           blur_opacity=180,
+                           # New parameters for bottom-right image
+                           bottom_right_image_path=None,
+                           bottom_right_image_size=(300, 200),
+                           bottom_right_margin=20,
+                           bottom_right_opacity=255,
+                           preserve_bottom_right_aspect=True,
+                           add_watermark=False):  # Flag to control watermark text
     """
     Add a text watermark and logo to an image from byte content with optional background box.
     Preserves original image dimensions and aspect ratio.
     
     Args:
-        image_content (bytes): Image byte content
-        watermark_text (str): Text to use as watermark
-        output_path (str, optional): Path to save the watermarked image
-        font_size (int): Size of the watermark font
-        font_color (tuple): RGB color of the watermark text
-        add_box (bool): Whether to add a background box behind text
-        box_color (tuple): RGB color of the background box
-        box_opacity (int): Transparency of background box (0-255)
-        box_padding (int): Padding around text inside the box
-        box_border (bool): Whether to add a border around the box
-        border_color (tuple): RGB color of the border
-        border_width (int): Width of the border in pixels
-        box_rounded (bool): Whether to use rounded corners
-        corner_radius (int): Radius for rounded corners
-        position (str): Position of watermark ('top-left', 'top-right', 'bottom-left', 'bottom-right', 'center')
-        logo_path (str, optional): Path to logo image file
-        logo_position (str): Position of logo
-        logo_size (tuple): Maximum size to resize logo to (width, height)
-        logo_opacity (int): Transparency of logo (0-255)
-        logo_margin (int): Margin from edges for logo placement
-        preserve_logo_aspect (bool): Whether to preserve logo aspect ratio when resizing
-        logo_blur_background (bool): Whether to add blur effect behind logo
-        blur_radius (int): Radius of the blur effect (higher = more blur)
-        blur_area_padding (int): Padding around logo for blur area
-        blur_opacity (int): Opacity of the blur overlay (0-255)
+        // ...existing args...
+        bottom_right_image_path (str, optional): Path to image to place in bottom-right
+        bottom_right_image_size (tuple): Maximum size for bottom-right image (width, height)
+        bottom_right_margin (int): Margin from edges for bottom-right image
+        bottom_right_opacity (int): Opacity of bottom-right image (0-255)
+        preserve_bottom_right_aspect (bool): Whether to preserve aspect ratio
+        add_watermark (bool): Whether to add text watermark (set to False to skip)
     
     Returns:
         PIL.Image or str: Watermarked image object if output_path is None, else path to saved image
@@ -176,67 +165,117 @@ def add_watermark_with_logo(image_content,
                 
             except Exception as logo_error:
                 print(f"Warning: Could not add logo - {str(logo_error)}")
+        if bottom_right_image_path and os.path.exists(bottom_right_image_path):
+            try:
+                print(f"Adding bottom-right image from: {bottom_right_image_path}")
+                bottom_right_img = Image.open(bottom_right_image_path).convert('RGBA')
+                original_br_size = bottom_right_img.size
+                print(f"Original bottom-right image dimensions: {original_br_size[0]}x{original_br_size[1]}")
+                
+                # Resize bottom-right image while preserving aspect ratio
+                if bottom_right_image_size and preserve_bottom_right_aspect:
+                    br_aspect = original_br_size[0] / original_br_size[1]
+                    target_width, target_height = bottom_right_image_size
+                    
+                    if target_width / target_height > br_aspect:
+                        new_height = target_height
+                        new_width = int(target_height * br_aspect)
+                    else:
+                        new_width = target_width
+                        new_height = int(target_width / br_aspect)
+                    
+                    bottom_right_img = bottom_right_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    print(f"Bottom-right image resized to: {new_width}x{new_height}")
+                elif bottom_right_image_size:
+                    bottom_right_img = bottom_right_img.resize(bottom_right_image_size, Image.Resampling.LANCZOS)
+                
+                # Calculate bottom-right position
+                img_width, img_height = original_size
+                br_width, br_height = bottom_right_img.size
+                
+                br_x = img_width - br_width - bottom_right_margin
+                br_y = img_height - br_height - bottom_right_margin
+                
+                # Apply opacity to bottom-right image
+                if bottom_right_opacity < 255:
+                    br_with_opacity = Image.new('RGBA', bottom_right_img.size, (0, 0, 0, 0))
+                    for x in range(bottom_right_img.width):
+                        for y in range(bottom_right_img.height):
+                            r, g, b, a = bottom_right_img.getpixel((x, y))
+                            new_alpha = int(a * (bottom_right_opacity / 255))
+                            br_with_opacity.putpixel((x, y), (r, g, b, new_alpha))
+                    bottom_right_img = br_with_opacity
+                
+                # Paste the bottom-right image
+                overlay_layer.paste(bottom_right_img, (br_x, br_y), bottom_right_img)
+                print(f"Bottom-right image placed at position: ({br_x}, {br_y})")
+                
+            except Exception as br_error:
+                print(f"Warning: Could not add bottom-right image - {str(br_error)}")
+        elif bottom_right_image_path:
+            print(f"Warning: Bottom-right image file '{bottom_right_image_path}' does not exist.")
         
-        # ...existing code...
-        # Load font
-        font = load_font(font_size)
-        
-        # Get text dimensions
-        bbox = draw.textbbox((0, 0), watermark_text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        
-        # Calculate positions
-        img_width, img_height = original_size
-        margin = 20
-        
-        if add_box:
-            box_width = text_width + (box_padding * 2)
-            box_height = text_height + (box_padding * 2)
-        else:
-            box_width = text_width
-            box_height = text_height
-            box_padding = 0
-        
-        position_map = {
-            'top-left': (margin, margin),
-            'top-right': (img_width - box_width - margin, margin),
-            'bottom-left': (margin, img_height - box_height - margin),
-            'bottom-right': (img_width - box_width - margin, img_height - box_height - margin),
-            'center': ((img_width - box_width) // 2, (img_height - box_height) // 2)
-        }
-        
-        box_x, box_y = position_map.get(position, position_map['bottom-right'])
-        
-        # Draw background box
-        if add_box:
-            box_color_with_opacity = (*box_color, box_opacity)
+        # Add watermark text only if add_watermark is True
+        if add_watermark and watermark_text:
+            # Load font
+            font = load_font(font_size)
             
-            if box_rounded:
-                draw_rounded_rectangle(draw, box_x, box_y, box_x + box_width, 
-                                     box_y + box_height, corner_radius, box_color_with_opacity)
+            # Get text dimensions
+            bbox = draw.textbbox((0, 0), watermark_text, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            
+            # Calculate positions
+            img_width, img_height = original_size
+            margin = 20
+            
+            if add_box:
+                box_width = text_width + (box_padding * 2)
+                box_height = text_height + (box_padding * 2)
             else:
-                draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], 
-                             fill=box_color_with_opacity)
+                box_width = text_width
+                box_height = text_height
+                box_padding = 0
             
-            # Draw border
-            if box_border:
-                border_color_with_opacity = (*border_color, 255)
+            position_map = {
+                'top-left': (margin, margin),
+                'top-right': (img_width - box_width - margin, margin),
+                'bottom-left': (margin, img_height - box_height - margin),
+                'bottom-right': (img_width - box_width - margin, img_height - box_height - margin),
+                'center': ((img_width - box_width) // 2, (img_height - box_height) // 2)
+            }
+            
+            box_x, box_y = position_map.get(position, position_map['bottom-right'])
+            
+            # Draw background box
+            if add_box:
+                box_color_with_opacity = (*box_color, box_opacity)
+                
                 if box_rounded:
-                    draw_rounded_rectangle_border(draw, box_x, box_y, box_x + box_width, 
-                                                box_y + box_height, corner_radius, 
-                                                border_color_with_opacity, border_width)
+                    draw_rounded_rectangle(draw, box_x, box_y, box_x + box_width, 
+                                         box_y + box_height, corner_radius, box_color_with_opacity)
                 else:
-                    for i in range(border_width):
-                        draw.rectangle([box_x - i, box_y - i, box_x + box_width + i, 
-                                      box_y + box_height + i], 
-                                     outline=border_color_with_opacity, width=1)
-        
-        # Draw watermark text
-        text_x = box_x + box_padding
-        text_y = box_y + box_padding
-        watermark_color = (*font_color, 255)
-        draw.text((text_x, text_y), watermark_text, font=font, fill=watermark_color)
+                    draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], 
+                                 fill=box_color_with_opacity)
+                
+                # Draw border
+                if box_border:
+                    border_color_with_opacity = (*border_color, 255)
+                    if box_rounded:
+                        draw_rounded_rectangle_border(draw, box_x, box_y, box_x + box_width, 
+                                                    box_y + box_height, corner_radius, 
+                                                    border_color_with_opacity, border_width)
+                    else:
+                        for i in range(border_width):
+                            draw.rectangle([box_x - i, box_y - i, box_x + box_width + i, 
+                                          box_y + box_height + i], 
+                                         outline=border_color_with_opacity, width=1)
+            
+            # Draw watermark text
+            text_x = box_x + box_padding
+            text_y = box_y + box_padding
+            watermark_color = (*font_color, 255)
+            draw.text((text_x, text_y), watermark_text, font=font, fill=watermark_color)
         
         # Composite the overlay onto the original image
         final_image = Image.alpha_composite(working_image, overlay_layer)
@@ -250,6 +289,79 @@ def add_watermark_with_logo(image_content,
             
     except Exception as e:
         raise Exception(f"Error adding watermark: {str(e)}")
+        # # ...existing code...
+        # # Load font
+        # font = load_font(font_size)
+        
+        # # Get text dimensions
+        # bbox = draw.textbbox((0, 0), watermark_text, font=font)
+        # text_width = bbox[2] - bbox[0]
+        # text_height = bbox[3] - bbox[1]
+        
+        # # Calculate positions
+        # img_width, img_height = original_size
+        # margin = 20
+        
+        # if add_box:
+        #     box_width = text_width + (box_padding * 2)
+        #     box_height = text_height + (box_padding * 2)
+        # else:
+        #     box_width = text_width
+        #     box_height = text_height
+        #     box_padding = 0
+        
+        # position_map = {
+        #     'top-left': (margin, margin),
+        #     'top-right': (img_width - box_width - margin, margin),
+        #     'bottom-left': (margin, img_height - box_height - margin),
+        #     'bottom-right': (img_width - box_width - margin, img_height - box_height - margin),
+        #     'center': ((img_width - box_width) // 2, (img_height - box_height) // 2)
+        # }
+        
+        # box_x, box_y = position_map.get(position, position_map['bottom-right'])
+        
+        # # Draw background box
+        # if add_box:
+        #     box_color_with_opacity = (*box_color, box_opacity)
+            
+        #     if box_rounded:
+        #         draw_rounded_rectangle(draw, box_x, box_y, box_x + box_width, 
+        #                              box_y + box_height, corner_radius, box_color_with_opacity)
+        #     else:
+        #         draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], 
+        #                      fill=box_color_with_opacity)
+            
+        #     # Draw border
+        #     if box_border:
+        #         border_color_with_opacity = (*border_color, 255)
+        #         if box_rounded:
+        #             draw_rounded_rectangle_border(draw, box_x, box_y, box_x + box_width, 
+        #                                         box_y + box_height, corner_radius, 
+        #                                         border_color_with_opacity, border_width)
+        #         else:
+        #             for i in range(border_width):
+        #                 draw.rectangle([box_x - i, box_y - i, box_x + box_width + i, 
+        #                               box_y + box_height + i], 
+        #                              outline=border_color_with_opacity, width=1)
+        
+        # # Draw watermark text
+        # text_x = box_x + box_padding
+        # text_y = box_y + box_padding
+        # watermark_color = (*font_color, 255)
+        # draw.text((text_x, text_y), watermark_text, font=font, fill=watermark_color)
+        
+        # # Composite the overlay onto the original image
+        # final_image = Image.alpha_composite(working_image, overlay_layer)
+        # print(f"Final image dimensions: {final_image.size[0]}x{final_image.size[1]} (preserved)")
+        
+        # # Save or return the image
+        # if output_path:
+        #     return save_image_watermark(final_image, output_path, original_size)
+        # else:
+        #     return final_image
+            
+    # except Exception as e:
+    #     raise Exception(f"Error adding watermark: {str(e)}")
 
 # if __name__ == "__main__":
 #     try:

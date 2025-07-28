@@ -94,7 +94,12 @@ async def upload_image(file: UploadFile = File(...)):
         watermarked_image = add_watermark_with_logo(
             image_content=content,
             logo_path="static/logo.png",  # Adjust path as needed
-            font_size=1200 
+            font_size=1200,
+            bottom_right_image_path="static/Oxy-logo-t.png",  # Your bottom-right image
+            bottom_right_image_size=(300, 200),  # Adjust size as needed
+            bottom_right_margin=30,  # Margin from edges
+            bottom_right_opacity=255,  # Full opacity
+            preserve_bottom_right_aspect=True  # Preserve aspect ratio
         )
                 # Convert RGBA to RGB if needed (JPEG doesn't support alpha)
         if watermarked_image.mode == 'RGBA':
