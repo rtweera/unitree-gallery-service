@@ -94,6 +94,7 @@ async def upload_image(file: UploadFile = File(...)):
         watermarked_image = add_watermark_with_logo(
             image_content=content,
             logo_path="static/logo.png"  # Adjust path as needed
+            font_size=240 
         )
                 # Convert RGBA to RGB if needed (JPEG doesn't support alpha)
         if watermarked_image.mode == 'RGBA':
