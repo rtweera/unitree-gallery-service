@@ -231,7 +231,8 @@ async def gallery_page(request: Request):
     return templates.TemplateResponse("gallery.html", {
         "request": request,
         "image_urls": image_files,
-        "images_exist": bool(image_files)
+        "images_exist": bool(image_files),
+        "polling_interval": 5000
     })
 
 # ====================
