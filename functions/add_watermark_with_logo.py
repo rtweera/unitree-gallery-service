@@ -8,7 +8,7 @@ from utils.image_utils import load_font, save_image_watermark, draw_rounded_rect
 def add_watermark_with_logo(image_content, 
                            watermark_text="Snapped by Oxy at WSO2Con Asia",
                            output_path=None,
-                           font_size=90,
+                           font_size=180,
                            font_color=(255, 255, 255),
                            add_box=True,
                            box_color=(0, 0, 0),
