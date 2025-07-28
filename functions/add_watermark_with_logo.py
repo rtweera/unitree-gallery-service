@@ -1,3 +1,10 @@
+from PIL import Image, ImageDraw, ImageFilter
+from io import BytesIO
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.image_utils import load_font, draw_rounded_rectangle, save_image_watermark, draw_rounded_rectangle_border
+
 def add_watermark_with_logo(image_content, 
                            watermark_text="Snapped by Oxy at WSO2Con Asia",
                            output_path=None,
@@ -282,79 +289,79 @@ def add_watermark_with_logo(image_content,
             
     except Exception as e:
         raise Exception(f"Error adding watermark: {str(e)}")
-        # ...existing code...
-        # Load font
-        font = load_font(font_size)
+        # # ...existing code...
+        # # Load font
+        # font = load_font(font_size)
         
-        # Get text dimensions
-        bbox = draw.textbbox((0, 0), watermark_text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
+        # # Get text dimensions
+        # bbox = draw.textbbox((0, 0), watermark_text, font=font)
+        # text_width = bbox[2] - bbox[0]
+        # text_height = bbox[3] - bbox[1]
         
-        # Calculate positions
-        img_width, img_height = original_size
-        margin = 20
+        # # Calculate positions
+        # img_width, img_height = original_size
+        # margin = 20
         
-        if add_box:
-            box_width = text_width + (box_padding * 2)
-            box_height = text_height + (box_padding * 2)
-        else:
-            box_width = text_width
-            box_height = text_height
-            box_padding = 0
+        # if add_box:
+        #     box_width = text_width + (box_padding * 2)
+        #     box_height = text_height + (box_padding * 2)
+        # else:
+        #     box_width = text_width
+        #     box_height = text_height
+        #     box_padding = 0
         
-        position_map = {
-            'top-left': (margin, margin),
-            'top-right': (img_width - box_width - margin, margin),
-            'bottom-left': (margin, img_height - box_height - margin),
-            'bottom-right': (img_width - box_width - margin, img_height - box_height - margin),
-            'center': ((img_width - box_width) // 2, (img_height - box_height) // 2)
-        }
+        # position_map = {
+        #     'top-left': (margin, margin),
+        #     'top-right': (img_width - box_width - margin, margin),
+        #     'bottom-left': (margin, img_height - box_height - margin),
+        #     'bottom-right': (img_width - box_width - margin, img_height - box_height - margin),
+        #     'center': ((img_width - box_width) // 2, (img_height - box_height) // 2)
+        # }
         
-        box_x, box_y = position_map.get(position, position_map['bottom-right'])
+        # box_x, box_y = position_map.get(position, position_map['bottom-right'])
         
-        # Draw background box
-        if add_box:
-            box_color_with_opacity = (*box_color, box_opacity)
+        # # Draw background box
+        # if add_box:
+        #     box_color_with_opacity = (*box_color, box_opacity)
             
-            if box_rounded:
-                draw_rounded_rectangle(draw, box_x, box_y, box_x + box_width, 
-                                     box_y + box_height, corner_radius, box_color_with_opacity)
-            else:
-                draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], 
-                             fill=box_color_with_opacity)
+        #     if box_rounded:
+        #         draw_rounded_rectangle(draw, box_x, box_y, box_x + box_width, 
+        #                              box_y + box_height, corner_radius, box_color_with_opacity)
+        #     else:
+        #         draw.rectangle([box_x, box_y, box_x + box_width, box_y + box_height], 
+        #                      fill=box_color_with_opacity)
             
-            # Draw border
-            if box_border:
-                border_color_with_opacity = (*border_color, 255)
-                if box_rounded:
-                    draw_rounded_rectangle_border(draw, box_x, box_y, box_x + box_width, 
-                                                box_y + box_height, corner_radius, 
-                                                border_color_with_opacity, border_width)
-                else:
-                    for i in range(border_width):
-                        draw.rectangle([box_x - i, box_y - i, box_x + box_width + i, 
-                                      box_y + box_height + i], 
-                                     outline=border_color_with_opacity, width=1)
+        #     # Draw border
+        #     if box_border:
+        #         border_color_with_opacity = (*border_color, 255)
+        #         if box_rounded:
+        #             draw_rounded_rectangle_border(draw, box_x, box_y, box_x + box_width, 
+        #                                         box_y + box_height, corner_radius, 
+        #                                         border_color_with_opacity, border_width)
+        #         else:
+        #             for i in range(border_width):
+        #                 draw.rectangle([box_x - i, box_y - i, box_x + box_width + i, 
+        #                               box_y + box_height + i], 
+        #                              outline=border_color_with_opacity, width=1)
         
-        # Draw watermark text
-        text_x = box_x + box_padding
-        text_y = box_y + box_padding
-        watermark_color = (*font_color, 255)
-        draw.text((text_x, text_y), watermark_text, font=font, fill=watermark_color)
+        # # Draw watermark text
+        # text_x = box_x + box_padding
+        # text_y = box_y + box_padding
+        # watermark_color = (*font_color, 255)
+        # draw.text((text_x, text_y), watermark_text, font=font, fill=watermark_color)
         
-        # Composite the overlay onto the original image
-        final_image = Image.alpha_composite(working_image, overlay_layer)
-        print(f"Final image dimensions: {final_image.size[0]}x{final_image.size[1]} (preserved)")
+        # # Composite the overlay onto the original image
+        # final_image = Image.alpha_composite(working_image, overlay_layer)
+        # print(f"Final image dimensions: {final_image.size[0]}x{final_image.size[1]} (preserved)")
         
-        # Save or return the image
-        if output_path:
-            return save_image_watermark(final_image, output_path, original_size)
-        else:
-            return final_image
+        # # Save or return the image
+        # if output_path:
+        #     return save_image_watermark(final_image, output_path, original_size)
+        # else:
+        #     return final_image
             
-    except Exception as e:
-        raise Exception(f"Error adding watermark: {str(e)}")
+    # except Exception as e:
+    #     raise Exception(f"Error adding watermark: {str(e)}")
 
 # if __name__ == "__main__":
 #     try:
