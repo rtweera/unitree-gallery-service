@@ -27,29 +27,16 @@
                 extend: {
                     fontFamily: {
                         'inter': ['Inter', 'sans-serif'],
+                        'ubuntu': ['Ubuntu', 'sans-serif'],
                     },
                     colors: {
-                        primary: {
-                            DEFAULT: 'hsl(222.2 47.4% 11.2%)',
-                            foreground: 'hsl(210 40% 98%)',
-                        },
-                        secondary: {
-                            DEFAULT: 'hsl(246, 66%, 19%)',
-                            foreground: 'hsl(222.2 47.4% 11.2%)',
-                        },
-                        accent: {
-                            DEFAULT: 'hsl(217.2 91.2% 59.8%)',
-                            foreground: 'hsl(210 40% 98%)',
-                        },
-                        muted: {
-                            DEFAULT: 'hsl(210 40% 96.1%)',
-                            foreground: 'hsl(215.4 16.3% 46.9%)',
-                        },
-                        border: 'hsl(214.3 31.8% 91.4%)',
-                        card: {
-                            DEFAULT: 'hsl(0 0% 100%)',
-                            foreground: 'hsl(222.2 84% 4.9%)',
-                        },
+                        white: '#FFFFFF',
+                        black: '#000000',
+                        accent: '#44F2E9',
+                        highlight: '#FF7300',
+                        'primary-grad': '#171152',
+                        secondary: '#070518',
+                        'tertiary-grad': '#251A7E',
                     },
                     animation: {
                         'spin-slow': 'spin 1s linear infinite',
@@ -86,11 +73,11 @@
     <style>
         /* Custom CSS for features not available in Tailwind utility classes */
         .gradient-primary {
-            background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%), hsl(217.2 91.2% 59.8%));
+            background: linear-gradient(135deg, #171152, #251A7E);
         }
         
         .gradient-bg {
-            background: linear-gradient(135deg, #281b9d, #1b4b9d, #1b609d);
+            background: linear-gradient(135deg, #171152, #251A7E);
         }
         
         .image-overlay-gradient {
@@ -107,24 +94,24 @@
         }
         
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: hsl(210 40% 96.1%);
+            background: rgba(255,255,255,0.1);
             border-radius: 2px;
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: hsl(215.4 16.3% 46.9% / 0.3);
+            background: rgba(255,255,255,0.3);
             border-radius: 2px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: hsl(215.4 16.3% 46.9% / 0.5);
+            background: rgba(255,255,255,0.5);
         }
         
         /* Firefox scrollbar */
         .custom-scrollbar {
             scrollbar-width: thin;
-            scrollbar-color: hsl(215.4 16.3% 46.9% / 0.3) hsl(210 40% 96.1%);
+            scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.1);
         }
         
         /* Modal overlay animation */
@@ -155,44 +142,49 @@
         .loading {
             width: 0.8rem;
             height: 0.8rem;
-            border: 2px solid hsl(214.3 31.8% 91.4%);
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: hsl(222.2 47.4% 11.2%);
+            border-top-color: #44F2E9;
             animation: spin 1s linear infinite;
         }
     </style>
 </head>
-<body class="font-inter h-screen overflow-hidden gradient-bg text-card-foreground leading-relaxed flex flex-col">
+<body class="font-ubuntu overflow-hidden gradient-bg text-white leading-relaxed flex flex-col h-screen">
     <!-- Header -->
-    <header class="bg-white/95 backdrop-blur-sm border-b border-border flex-shrink-0 h-15">
-        <div class="h-full px-4 flex items-center justify-between">
+    <header class="bg-primary-grad/95 backdrop-blur-sm border-b border-white/10 flex-shrink-0 h-15">
+        <div class="h-full px-4 py-2 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 gradient-primary rounded-md flex items-center justify-center text-base text-white">
                     🐕
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-tight">Oxy's Gallery - WSO2Con Asia</h1>
-                    <p class="text-sm text-muted-foreground hidden sm:block">Adventures through four-legged eyes</p>
+                    <h1 class="text-lg font-bold tracking-tight text-white">Oxy's Gallery - WSO2Con Asia</h1>
+                    <p class="text-sm text-white/70 hidden sm:block">Adventures through four-legged eyes</p>
                 </div>
             </div>
-
-            {% if images_exist %}
-            <div class="bg-secondary text-secondary-foreground px-2 py-1 rounded-lg text-xs font-medium hidden sm:block">
-                {{ image_urls|length }} Tail-Wagging Moments
+            <div class="flex items-center gap-3 font-semibold tracking-wider">
+                {% if images_exist %}
+                <div class="text-white px-3 py-1.5 rounded-full text-lg hidden sm:block">
+                    {{ image_urls|length }} tail-wagging moments
+                </div>
+                {% endif %}
+                <div class="bg-accent text-black px-3 py-1.5 rounded-full text-lg hidden sm:block hover:cursor-pointer hover:text-white hover:bg-highlight transition-all duration-300" onclick="location.reload()" aria-label="Check for Oxy's new adventures">
+                    <span class="loading hidden" id="refreshSpinner"></span>
+                    <span id="refreshText2">Check for New Adventures</span>
+                </div>
             </div>
-            {% endif %}
         </div>
     </header>
 
     <!-- Delete Confirmation Modal -->
     <div class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" id="deleteModal">
-        <div class="modal-content bg-card rounded-xl shadow-2xl max-w-md w-[90%] overflow-hidden">
+        <div class="modal-content bg-white rounded-xl shadow-2xl max-w-md w-[90%] overflow-hidden">
             <div class="p-6 pb-0 text-center">
                 <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
                     🗑️
                 </div>
-                <h3 class="text-lg font-semibold text-card-foreground mb-2">Remove Adventure?</h3>
-                <p class="text-sm text-muted-foreground">Are you sure you want to remove this precious memory from Oxy's collection?</p>
+                <h3 class="text-lg font-semibold text-black mb-2">Remove Adventure?</h3>
+                <p class="text-sm text-black/70">Are you sure you want to remove this precious memory from Oxy's collection?</p>
             </div>
             <div class="p-4 px-6">
                 <img id="modalImagePreview" class="w-full max-h-32 object-cover rounded-lg mb-4" src="" alt="Image to delete">
@@ -205,7 +197,7 @@
                 </div>
             </div>
             <div class="p-6 pt-0 flex gap-3 justify-end">
-                <button class="px-5 py-2.5 bg-secondary text-secondary-foreground border border-border rounded-lg font-medium text-sm hover:bg-muted transition-colors min-w-20 flex items-center justify-center gap-2" onclick="closeDeleteModal()">
+                <button class="px-5 py-2.5 bg-white text-black border border-black/20 rounded-lg font-medium text-sm hover:bg-highlight hover:text-white transition-colors min-w-20 flex items-center justify-center gap-2" onclick="closeDeleteModal()">
                     Keep Adventure
                 </button>
                 <button class="px-5 py-2.5 bg-red-600 text-white rounded-lg font-medium text-sm hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors min-w-20 flex items-center justify-center gap-2" id="confirmDeleteBtn" onclick="confirmDelete()">
@@ -217,50 +209,42 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 p-4 flex flex-col min-h-0 bg-primary">
-        <!-- Gallery Header -->
-        <div class="mb-4 flex flex-col items-start gap-2">
-            <button class="inline-flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground border-none rounded-md font-medium text-sm cursor-pointer transition-all duration-300 hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" onclick="refreshGallery()" id="refreshBtn">
-                <span id="refreshIcon">🔄</span>
-                <span id="refreshText">Check for New Adventures</span>
-            </button>
-        </div>
-
+    <main class="flex-1 p-4 flex flex-col min-h-0 bg-primary-grad">
         <!-- Gallery Grid -->
         <div class="grid grid-cols-1 md:grid-cols-[220px_1fr_30vw] lg:grid-cols-[250px_1fr_30vw] gap-4 flex-1 min-h-0">
             <!-- Thumbnail Section -->
-            <div class="bg-card border border-border rounded-lg shadow-sm transition-all duration-300 overflow-hidden flex flex-col min-h-0 bg-secondary">
-                <div class="flex items-center gap-2 font-semibold text-sm px-4 pt-4 pb-2 flex-shrink-0">
+            <div class="bg-secondary border border-white/10 rounded-lg shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-h-0">
+                <div class="flex items-center gap-2 font-semibold text-sm px-4 pt-4 pb-2 flex-shrink-0 text-white">
                     <span>📷</span>
-                    <span>Oxy's Latest Discoveries</span>
+                    <span>Latest adventures</span>
                 </div>
                 {% if images_exist %}
-                <div class="flex-1 px-4 pb-4 grid grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto min-h-0 custom-scrollbar">
+                <div class="flex-1 px-4 py-4 grid grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto min-h-0 custom-scrollbar">
                     {% for image_url in image_urls %}
-                    <div class="thumbnail relative cursor-pointer rounded-md overflow-visible transition-all duration-300 border-2 border-transparent hover:scale-105 hover:border-accent focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 {% if loop.first %}selected border-primary shadow-primary/20 shadow-md{% endif %}" 
+                    <div class="thumbnail relative cursor-pointer rounded-md overflow-hidden transition-all duration-300 border-2 border-transparent hover:scale-105 hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 {% if loop.first %}selected border-highlight shadow-highlight/20 shadow-md{% endif %}" 
                          onclick="selectImage('{{ image_url }}')" 
                          tabindex="0" 
                          role="button" 
                          aria-label="View Oxy's adventure {{ loop.index }}"
                          onkeydown="handleThumbnailKeydown(event, '{{ image_url }}')">
-                        <img src="/images/{{ image_url }}" alt="Oxy's discovery {{ loop.index }}" loading="lazy" class="w-full object-contain block">
-                        <div class="thumbnail-indicator absolute top-2 right-2 w-2 h-2 bg-primary rounded-full opacity-0 transition-all duration-300 {% if loop.first %}opacity-100{% endif %}"></div>
+                        <img src="/images/{{ image_url }}" alt="Oxy's discovery {{ loop.index }}" loading="lazy" class="w-full h-24 object-cover block overflow-visible">
+                        <div class="thumbnail-indicator absolute top-2 right-2 w-2 h-2 bg-accent rounded-full opacity-0 transition-all duration-300 {% if loop.first %}opacity-100{% endif %}"></div>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                <div class="flex flex-col items-center justify-center h-full text-center text-white/70 p-4">
                     <div class="text-2xl mb-3 opacity-50">🔍</div>
-                    <p class="font-medium text-card-foreground mb-2">Oxy's Out Exploring!</p>
+                    <p class="font-medium text-white mb-2">Oxy's Out Exploring!</p>
                     <p class="text-sm">Our adventurous pup is busy discovering new moments to share with the family!</p>
                 </div>
                 {% endif %}
             </div>
 
             <!-- Main Image Display -->
-            <div class="bg-card border border-border rounded-lg shadow-sm transition-all duration-300 overflow-hidden flex flex-col min-h-0">
+            <div class="bg-white/10 border border-white/10 rounded-lg shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-h-0">
                 {% if images_exist %}
-                <div class="relative flex-1 m-4 rounded-lg overflow-hidden bg-gray-50 min-h-0 flex items-center justify-center group">
+                <div class="relative flex-1 m-4 rounded-lg overflow-hidden bg-white/5 min-h-0 flex items-center justify-center group">
                     <img id="mainImage" src="/images/{{ image_urls[0] }}" alt="Oxy's selected adventure" class="w-full h-full object-contain block">
                     <div class="image-overlay-gradient absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
                         <div class="text-white">
@@ -270,44 +254,44 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+                <div class="flex flex-col items-center justify-center h-full text-center text-white/70 p-4">
                     <div class="text-2xl mb-3">🤖</div>
-                    <h3 class="font-semibold text-card-foreground mb-2">Adventure Loading...</h3>
+                    <h3 class="font-semibold text-white mb-2">Adventure Loading...</h3>
                     <p class="text-sm">Our four-legged photographer is out there sniffing out the perfect shots!</p>
                 </div>
                 {% endif %}
             </div>
 
             <!-- QR Code & Download Section -->
-            <div class="bg-card border border-border rounded-lg shadow-sm transition-all duration-300 overflow-hidden flex flex-col min-h-0">
-                <div class="px-4 pt-4 pb-2 text-center flex-shrink-0">
-                    <h3 class="font-semibold text-base mb-1 text-3xl">Download and Take Oxy's Memories Home</h3>
-                
+            <div class="bg-tertiary-grad border border-white/10 rounded-lg shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-h-0">
+                <div class="px-4 pt-4 pb-2 mt-10 text-center flex-shrink-0">
+                    <h3 class="font-ubuntu font-bold text-3xl text-white">Scan to Download</h3>
                 </div>
                 
-               {% if images_exist %}
-<div class="flex-1 flex flex-col justify-center items-center p-4 min-h-0">
-    <img id="qrImage" src="/qr/{{ image_urls[0]|basename }}" alt="QR Code to keep Oxy's adventures" class="w-84 h-84 bg-muted rounded-xl block p-2 object-contain shadow-lg">
-  
-</div>
-{% endif %}
+                {% if images_exist %}
+                <div class="flex-1 flex flex-col justify-center items-center p-4 min-h-0">
+                    <div class="bg-white rounded-xl p-4 shadow-lg">
+                        <img id="qrImage" src="/qr/{{ image_urls[0]|basename }}" alt="QR Code to keep Oxy's adventures" class="w-full h-full block object-contain">
+                    </div>
+                </div>
+                {% endif %}
                 
-                <div class="flex flex-col gap-3 p-6 flex-shrink-0">
-                    <button class="inline-flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground border-none rounded-md font-medium text-sm cursor-pointer transition-all duration-300 hover:bg-primary/90 hover:-translate-y-0.5" onclick="location.reload()" aria-label="Check for Oxy's new adventures">
-                        <span class="loading hidden" id="refreshSpinner"></span>
-                        <span id="refreshText2">🔄 See Oxy's Latest Finds</span>
-                    </button>
+                <div class="flex flex-col gap-3 px-20 flex-shrink-0 items-center justify-center py-4 font-semibold tracking-wider">
+                    <div class="bg-accent text-black px-5 py-1.5 rounded-full text-lg hidden sm:block hover:cursor-pointer hover:text-white hover:bg-highlight transition-all duration-300 w-fit" onclick="deleteCurrentImage()" aria-label="Delete current image" id="deleteBtn">
+                        <span class="loading hidden" id="deleteSpinner"></span>
+                        <span id="refreshText2">🗑️ Bury the memory</span>
+                    </div>
                     <button class="inline-flex items-center gap-2 px-3 py-2 bg-red-500 text-white border-none rounded-md font-medium text-sm cursor-pointer transition-all duration-300 hover:bg-red-600 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" onclick="deleteCurrentImage()" id="deleteBtn" aria-label="Delete current image">
                         <span class="loading hidden" id="deleteSpinner"></span>
                         <span id="deleteText">🗑️ Remove This Adventure</span>
                     </button>
                 </div>
 
-                <div class="px-4 py-3 border-t border-border text-xs text-muted-foreground text-center flex-shrink-0">
+                <div class="px-4 py-3 border-t border-white/10 text-xs text-white/70 text-center flex-shrink-0">
                     <p>Lovingly captured by</p>
                     <div class="flex items-center justify-center gap-2 mt-2">
                         <div class="w-5 h-5 gradient-primary rounded-full flex items-center justify-center text-xs text-white">🐕</div>
-                        <span>Oxy, Our Family Explorer</span>
+                        <span>Oxy, our family explorer</span>
                     </div>
                 </div>
             </div>
@@ -386,7 +370,7 @@
 
         // Update selected thumbnail style
         document.querySelectorAll('.thumbnail').forEach(el => {
-            el.classList.remove('selected', 'border-primary', 'shadow-primary/20', 'shadow-md');
+            el.classList.remove('selected', 'border-highlight', 'shadow-highlight/20', 'shadow-md');
             el.classList.add('border-transparent');
             el.setAttribute('aria-pressed', 'false');
             const indicator = el.querySelector('.thumbnail-indicator');
@@ -401,7 +385,7 @@
         thumbnails.forEach(el => {
             if (el.src.includes('/images/' + imageUrl)) {
                 const thumbnail = el.parentElement;
-                thumbnail.classList.add('selected', 'border-primary', 'shadow-primary/20', 'shadow-md');
+                thumbnail.classList.add('selected', 'border-highlight', 'shadow-highlight/20', 'shadow-md');
                 thumbnail.classList.remove('border-transparent');
                 thumbnail.setAttribute('aria-pressed', 'true');
                 const indicator = thumbnail.querySelector('.thumbnail-indicator');
