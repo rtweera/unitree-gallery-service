@@ -213,21 +213,21 @@
         <!-- Gallery Grid -->
         <div class="grid grid-cols-1 md:grid-cols-[220px_1fr_30vw] lg:grid-cols-[250px_1fr_30vw] gap-4 flex-1 min-h-0">
             <!-- Thumbnail Section -->
-            <div class="bg-secondary border border-white/10 rounded-lg shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-h-0">
+            <div class="bg-secondary border border-white/10 rounded-lg shadow-lg transition-all duration-300 flex flex-col min-h-0">
                 <div class="flex items-center gap-2 font-semibold text-sm px-4 pt-4 pb-2 flex-shrink-0 text-white">
                     <span>📷</span>
                     <span>Latest adventures</span>
                 </div>
                 {% if images_exist %}
-                <div class="flex-1 px-4 py-4 grid grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto min-h-0 custom-scrollbar">
+                <div class="px-4 py-4 flex flex-col gap-2 overflow-y-auto min-h-0 custom-scrollbar">
                     {% for image_url in image_urls %}
-                    <div class="thumbnail relative cursor-pointer rounded-md overflow-hidden transition-all duration-300 border-2 border-transparent hover:scale-105 hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 {% if loop.first %}selected border-highlight shadow-highlight/20 shadow-md{% endif %}" 
+                    <div class="thumbnail relative cursor-pointer rounded-md overflow-visible transition-all duration-300 border-2 border-transparent hover:scale-105 hover:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 {% if loop.first %}selected border-highlight shadow-highlight/20 shadow-md{% endif %}" 
                          onclick="selectImage('{{ image_url }}')" 
                          tabindex="0" 
                          role="button" 
                          aria-label="View Oxy's adventure {{ loop.index }}"
                          onkeydown="handleThumbnailKeydown(event, '{{ image_url }}')">
-                        <img src="/images/{{ image_url }}" alt="Oxy's discovery {{ loop.index }}" loading="lazy" class="w-full h-24 object-cover block overflow-visible">
+                        <img src="/images/{{ image_url }}" alt="Oxy's discovery {{ loop.index }}" loading="lazy" class="h-fit min-h-fit w-full object-contain block">
                         <div class="thumbnail-indicator absolute top-2 right-2 w-2 h-2 bg-accent rounded-full opacity-0 transition-all duration-300 {% if loop.first %}opacity-100{% endif %}"></div>
                     </div>
                     {% endfor %}
