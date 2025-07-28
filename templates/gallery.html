@@ -17,7 +17,7 @@
             } catch (e) {
                 console.error("Polling error:", e);
             }
-        }, 1000); // every 1 second
+        }, {{ polling_interval|default(15000) }}); // every 5 seconds
     </script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
