@@ -266,7 +266,12 @@
             <div class="bg-tertiary-grad border border-white/10 rounded-lg shadow-lg transition-all duration-300 overflow-hidden flex flex-col min-h-0">
                 <div class="px-4 pt-4 pb-2 mt-10 text-center flex-shrink-0">
                     <h3 class="font-ubuntu font-bold text-3xl text-white">Scan to Download</h3>
+
+                    <p class="mt-3 font-ubuntu font-normal text-sm text-white">Bring Oxy's adventures home by scanning the QR code!</p>
                 </div>
+                <!-- <div class="px-4 pt-4 pb-2 mt-10 text-center flex-shrink-0">
+                    <h3 class="font-ubuntu font-bold text-3xl text-white">Scan to Download</h3>
+                </div> -->
                 
                 {% if images_exist %}
                 <div class="flex-1 flex flex-col justify-center items-center p-4 min-h-0">
@@ -543,6 +548,7 @@
                 if (firstImg) {
                     const imageUrl = firstImg.src.split('/images/')[1];
                     selectImage(imageUrl);
+                    selected = firstThumbnail; // Update selected to the first thumbnail
                 }
             } else {
                 // Get the currently selected image
@@ -551,8 +557,9 @@
                     currentSelectedImage = selectedImg.src.split('/images/')[1];
                 }
             }
-            
-            selected.setAttribute('aria-pressed', 'true');
+            if (selected){
+                selected.setAttribute('aria-pressed', 'true');
+            }
         }
         
         document.querySelectorAll('.thumbnail:not(.selected)').forEach(el => {
