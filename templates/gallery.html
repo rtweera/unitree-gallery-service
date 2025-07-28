@@ -164,7 +164,7 @@
             </div>
             <div class="flex items-center gap-3 font-semibold tracking-wider">
                 {% if images_exist %}
-                <div class="text-white px-3 py-1.5 rounded-full text-lg hidden sm:block">
+                <div class="text-white px-3 py-1.5 rounded-full text-lg hidden sm:block badge">
                     {{ image_urls|length }} tail-wagging moments
                 </div>
                 {% endif %}
@@ -334,7 +334,7 @@
         if (badge) {
             const remainingCount = document.querySelectorAll('.thumbnail').length;
             if (remainingCount > 0) {
-                badge.textContent = `${remainingCount} Tail-Wagging Moment${remainingCount !== 1 ? 's' : ''}`;
+                badge.textContent = `${remainingCount} tail-wagging moments${remainingCount !== 1 ? 's' : ''}`;
                 // Add a subtle animation to highlight the change
                 badge.style.transform = 'scale(1.1)';
                 badge.style.transition = 'transform 0.2s ease-out';
