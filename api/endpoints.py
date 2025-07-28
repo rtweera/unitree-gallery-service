@@ -232,7 +232,7 @@ async def gallery_page(request: Request):
         "request": request,
         "image_urls": image_files,
         "images_exist": bool(image_files),
-        "polling_interval": 5000
+        "polling_interval": int(os.getenv("POLLING_INTERVAL", 15000))  # Default to 15 seconds if not set
     })
 
 # ====================
