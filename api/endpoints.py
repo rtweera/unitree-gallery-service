@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 import pytz
 
-from .services import get_images, save_image, get_image_path, generate_qr_code, get_basename_images, get_qr_path, get_qr_files, get_image_stats, get_qr_stats
+from .services import get_images, save_image, get_image_path, generate_qr_code, get_basename_images, get_qr_path, get_qr_files, get_image_stats, get_qr_stats, delete_old_images
 from .constants import IMG_EXT, QR_EXT
 from functions.add_watermark_with_logo import add_watermark_with_logo
 
@@ -89,6 +89,12 @@ async def upload_image(file: UploadFile = File(...)):
     try:
         # Read the uploaded file content
         content = await file.read()
+
+        # Delete old images if necessary
+        try:
+            delete_old_images()
+        except Exception as e:
+            print(f"Error deleting old images: {str(e)}")
         
         # Add watermark and logo to the image
         watermarked_image = add_watermark_with_logo(
