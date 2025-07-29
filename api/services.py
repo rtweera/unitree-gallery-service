@@ -4,7 +4,7 @@ from uuid import uuid4
 import qrcode 
 from dotenv import load_dotenv
 import pytz
-from .constants import IMG_EXT, QR_EXT, IMAGES_DIR, QR_DIR
+from .constants import IMG_EXT, QR_EXT, IMAGES_DIR, QR_DIR, IMG_QTY, IMG_QTY_BUFFER
 
 
 load_dotenv(verbose=True, override=True)
@@ -59,7 +59,7 @@ def get_basename_images(images_dir: str = IMAGES_DIR):
         [os.path.splitext(f)[0] for f in os.listdir(images_dir) if f.endswith(IMG_EXT)],
         key=lambda x: os.path.getmtime(os.path.join(images_dir, x + IMG_EXT)),
         reverse=True
-    )[:20]  
+    )[:IMG_QTY]  
     return image_files
 
 def save_image(image_data: bytes, images_dir: str = IMAGES_DIR) -> str:
@@ -97,3 +97,16 @@ def generate_qr_code(image_id: str, deployed_url: str = os.getenv("DEPLOYED_URL"
     with open(qr_path, "wb") as qr_file:
         qr_img.save(qr_file)
     return qr_path
+
+def delete_old_images(images_dir: str = IMAGES_DIR, img_qty: int = IMG_QTY, img_qty_buffer: int = IMG_QTY_BUFFER):
+    """Delete old images to maintain a maximum number of images"""
+    image_files = get_images(images_dir)
+    qr_files = get_qr_files(QR_DIR)
+    if len(image_files) > img_qty + img_qty_buffer:
+        for file_path in image_files[img_qty + img_qty_buffer:]:
+            os.remove(file_path)
+            print(f"Deleted old image: {file_path}")
+    if len(qr_files) > img_qty + img_qty_buffer:
+        for file_path in qr_files[img_qty + img_qty_buffer:]:
+            os.remove(file_path)
+            print(f"Deleted old QR code: {file_path}")
